@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="사문 분류">
+<meta name="theme-color" content="#f5f6fa">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>사회·문화 분류 트레이너 — 사회화 기관 · 사회 집단 · 사회 조직</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--ink:#1d2233;--sub:#667085;--line:#e2e5ee;--pri:#3b5bdb;--pri2:#e7ecff;--ok:#2b8a3e;--okb:#e6f6ea;--no:#e03131;--nob:#fdecec;--warn:#e67700;--warnb:#fff6e5}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif;-webkit-text-size-adjust:100%}
+body{padding:0 env(safe-area-inset-right) 60px env(safe-area-inset-left)}
+header{position:sticky;top:0;z-index:30;background:rgba(245,246,250,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.hwrap{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:19px;margin:0;flex:1;min-width:190px}
+h1 small{display:block;font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
+nav{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px}
+nav button{border:0;background:none;padding:10px 14px;border-radius:10px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;position:relative}
+nav button.on{background:var(--pri);color:#fff}
+nav .dot{position:absolute;top:4px;right:4px;min-width:18px;height:18px;border-radius:9px;background:var(--no);color:#fff;font-size:11px;line-height:18px;padding:0 4px}
+main{max-width:1180px;margin:0 auto;padding:16px}
+.panel{display:none}.panel.on{display:block}
+.box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp{justify-content:space-between}
+.btn{border:1.5px solid var(--line);background:#fff;padding:11px 16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;color:var(--ink);font-family:inherit}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.sel{background:var(--pri2);border-color:var(--pri);color:var(--pri)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.4;cursor:default}
+.muted{color:var(--sub);font-size:14px;line-height:1.55}
+.tag{display:inline-block;font-size:12px;padding:3px 9px;border-radius:99px;background:var(--pri2);color:var(--pri);font-weight:800}
+.tag.w{background:var(--warnb);color:var(--warn)}
+h2{font-size:18px;margin:0 0 6px}
+/* 모드 카드 */
+.modes{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}
+.mode{border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;cursor:pointer;background:#fff;text-align:left;font-family:inherit;color:var(--ink)}
+.mode b{display:block;font-size:15px}
+.mode span{font-size:12px;color:var(--sub)}
+.mode.sel{border-color:var(--pri);background:var(--pri2)}
+/* 카드 게임 */
+#tray{min-height:84px;display:flex;flex-wrap:wrap;gap:8px;padding:10px;border:2px dashed var(--line);border-radius:14px;background:#fafbff;margin-top:12px}
+#tray:empty::after{content:'모든 카드를 배치했어요. 확인 후 제출하세요!';color:var(--sub);font-size:14px;align-self:center}
+.card{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;background:#fff;border:1.5px solid #cdd3e3;border-radius:12px;padding:9px 12px;font-size:15px;font-weight:800;cursor:grab;box-shadow:0 2px 4px rgba(0,0,0,.05);max-width:100%;line-height:1.3}
+.card small{display:block;font-weight:500;color:var(--sub);font-size:12px;margin-top:2px}
+.card.picked{outline:3px solid var(--pri);transform:scale(1.04)}
+.card.right{border-color:var(--ok);background:var(--okb);cursor:default}
+.card.wrong{border-color:var(--no);background:var(--nob)}
+.card .ans{display:block;font-size:12px;color:var(--no);font-weight:700;margin-top:3px}
+.ghost{position:fixed;pointer-events:none;z-index:99;opacity:.92;transform:rotate(2deg) scale(1.05);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.grid{display:grid;gap:8px;margin-top:12px}
+.gh{font-weight:800;font-size:14px;text-align:center;padding:8px;background:#eef1f8;border-radius:10px;display:flex;align-items:center;justify-content:center;line-height:1.3}
+.gh small{display:block;font-weight:600;color:var(--sub);font-size:11px}
+.zone{min-height:120px;border:2px dashed #c5cce0;border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;background:#fff;transition:background .15s,border-color .15s}
+.zone.hover{border-color:var(--pri);background:var(--pri2)}
+.zone.na{background:repeating-linear-gradient(45deg,#fafafa,#fafafa 8px,#f1f2f5 8px,#f1f2f5 16px)}
+.prog{font-size:14px;font-weight:700;color:var(--sub)}
+.fbi{border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14px;line-height:1.65}
+.fbi.ok{background:var(--okb)}.fbi.no{background:var(--nob)}.fbi.info{background:var(--warnb)}
+.score{font-size:24px;font-weight:900}
+/* 개수 게임 */
+.timer{height:10px;background:#e9ecf3;border-radius:99px;overflow:hidden;margin:10px 0}
+.timer i{display:block;height:100%;width:100%;background:var(--pri)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:12px 0}
+.it{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px;font-weight:800;font-size:15px;line-height:1.3}
+.it small{display:block;color:var(--sub);font-weight:500;font-size:12px;margin-top:2px}
+.it.y{border-color:var(--ok);background:var(--okb)}
+.q{font-size:21px;font-weight:900;margin:6px 0;line-height:1.4}
+.q b{color:var(--pri)}
+.nums{display:flex;flex-wrap:wrap;gap:8px}
+.nums button{width:58px;height:58px;font-size:22px;font-weight:900;border-radius:14px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;color:var(--ink)}
+.nums button.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.nums button.no{background:var(--no);color:#fff;border-color:var(--no)}
+.combo{font-weight:900;color:var(--warn)}
+/* 통계 */
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:110px 1fr 70px;gap:8px;align-items:center;font-size:14px}
+.bar .t{height:12px;background:#e9ecf3;border-radius:99px;overflow:hidden}
+.bar .t i{display:block;height:100%}
+/* 오답/노트 */
+.wl{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;background:#fff}
+.wl h4{margin:6px 0 4px;font-size:16px}
+.note h3{margin:4px 0 10px;font-size:18px}
+.note table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}
+.note th,.note td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top;line-height:1.5}
+.note th{background:#eef1f8}
+.trap{border-left:4px solid var(--warn);background:var(--warnb);padding:10px 12px;border-radius:8px;margin:8px 0;font-size:14px;line-height:1.65}
+details{border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:10px;padding:2px 14px}
+summary{font-weight:800;font-size:16px;padding:11px 0;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1.1fr;gap:14px;align-items:start}
+.seg{display:flex;gap:4px;background:#eef1f8;border-radius:12px;padding:4px}
+.seg button{flex:1;border:0;background:none;padding:8px 10px;border-radius:9px;font-weight:700;font-size:14px;color:var(--sub);font-family:inherit;cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1d2233;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:100;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+/* 헤더 설정 버튼 */
+.gear{border:1px solid var(--line);background:var(--card);border-radius:12px;width:44px;height:44px;font-size:20px;cursor:pointer;color:var(--ink)}
+/* 하루 기록 바 */
+.day{padding:12px 16px}
+.wk{display:flex;gap:4px}
+.wk i{font-style:normal;width:24px;height:24px;border-radius:7px;background:var(--line);font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-weight:700}
+.wk i.on{background:var(--ok);color:#fff}
+/* 실전 문항 */
+.bogi{border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;line-height:1.8;font-size:15px;background:var(--card)}
+.bogi .tt{text-align:center;font-weight:800;margin-bottom:4px;letter-spacing:4px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.opts .btn{padding:12px 6px}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.no{background:var(--no);border-color:var(--no);color:#fff}
+.btn.okb{background:var(--okb);border-color:var(--ok);color:var(--ok)}
+.btn.nob{background:var(--nob);border-color:var(--no);color:var(--no)}
+.qt{border-collapse:collapse;margin:10px auto;width:100%;max-width:600px;font-size:15px}
+.qt th,.qt td{border:1px solid var(--line);padding:9px;text-align:center}
+.qt td:first-child{text-align:left}
+.qt th{background:var(--pri2)}
+.psg{line-height:2.1;font-size:16px;border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;background:var(--card);margin-top:10px}
+.mk{text-decoration:underline;text-underline-offset:5px;font-weight:800}
+.pr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 0;border-bottom:1px dashed var(--line)}
+/* 설정 시트 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:var(--bg);width:min(760px,100%);max-height:90vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.sheet h3{margin:18px 0 8px;font-size:16px}
+.in{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:16px;background:var(--card);color:var(--ink);font-family:inherit}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:8px 0}
+.fgrid label{font-size:12px;color:var(--sub);font-weight:700}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:20px}}
+/* 다크 모드 */
+[data-theme=dark]{--bg:#12151f;--card:#1c2130;--ink:#e8ebf3;--sub:#9aa3b8;--line:#2e3548;--pri:#6c8cff;--pri2:#26304f;--ok:#40c057;--okb:#1b3324;--no:#ff6b6b;--nob:#3b2026;--warn:#ffa94d;--warnb:#3a2e1c}
+[data-theme=dark] header{background:rgba(18,21,31,.92)}
+:where([data-theme=dark]) :is(.btn,.card,nav,.zone,.it,.mode,.wl,details,.nums button){background:var(--card);color:var(--ink);border-color:var(--line)}
+:where([data-theme=dark]) :is(.gh,.note th,.seg,.timer,.bar .t){background:#262d40}
+:where([data-theme=dark]) .seg button.on{background:var(--card);color:var(--ink)}
+:where([data-theme=dark]) #tray{background:#171b27;border-color:var(--line)}
+:where([data-theme=dark]) .zone.na{background:repeating-linear-gradient(45deg,#1c2130,#1c2130 8px,#232a3b 8px,#232a3b 16px)}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+@media(max-width:600px){nav{order:5}.opts{grid-template-columns:repeat(3,1fr)}.day{padding:10px 12px}.psg{font-size:15px}}
+@media(max-width:600px){
+ h1{font-size:16px}.hwrap{padding:8px 10px}main{padding:10px}
+ nav{width:100%}nav button{flex:1;padding:9px 4px;font-size:13px}
+ .box{padding:12px;border-radius:14px}
+ .zone{min-height:90px;padding:6px}.card{font-size:13px;padding:7px 9px}
+ .gh{font-size:12px;padding:6px 4px}.q{font-size:17px}
+ .nums button{width:48px;height:48px;font-size:19px}
+ .items{grid-template-columns:repeat(2,1fr)}.it{font-size:14px}
+ .bar{grid-template-columns:84px 1fr 60px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+<h1>사회·문화 분류 트레이너<small>사회화 기관 · 사회 집단 · 사회 조직 | 수능 대비</small></h1>
+<nav>
+<button data-p="p1" class="on">카드 분류</button>
+<button data-p="p2">타임어택</button>
+<button data-p="p4">실전 문항</button>
+<button data-p="p3">오답·노트<span class="dot" id="navDot" style="display:none"></span></button>
+</nav>
+<button class="gear" id="gear" aria-label="설정">⚙️</button>
+</div></header>
+
+<main>
+<div class="box day"><div class="row sp" style="gap:12px">
+  <div class="row" style="gap:14px"><div><span class="muted">연속 학습</span> <b>🔥 <span id="dStreak">0</span>일</b></div><div class="wk" id="dWeek"></div></div>
+  <div class="row" style="gap:10px;flex:1;justify-content:flex-end;min-width:240px">
+    <div style="flex:1;max-width:260px"><div class="muted" style="font-size:12px">오늘 푼 문항 <b id="dToday"></b></div><div class="timer" style="margin:4px 0 0;height:8px"><i id="dBar" style="background:var(--ok);width:0"></i></div></div>
+    <button class="btn sm pri" id="dRev">오늘의 복습</button>
+  </div>
+</div></div>
+<!-- ============ ① 카드 분류 ============ -->
+<section id="p1" class="panel on">
+  <div class="box">
+    <div class="row sp"><h2>분류 기준 고르기</h2><span class="muted" id="mStat"></span></div>
+    <div class="modes" id="modeBtns"></div>
+  </div>
+  <div class="box">
+    <div class="row sp">
+      <div><span class="tag" id="roundTag"></span> <span class="prog" id="prog"></span></div>
+      <div class="row">
+        <button class="btn sm" id="newRound">↻ 새 카드</button>
+        <button class="btn sm" id="wrongRound">오늘의 복습</button>
+      </div>
+    </div>
+    <p class="muted" id="modeDesc" style="margin:8px 0 0"></p>
+    <div id="tray"></div>
+    <div class="grid" id="grid"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn pri" id="submit">제출하기</button>
+      <button class="btn" id="retry" style="display:none">틀린 카드 다시 놓기</button>
+      <button class="btn pri" id="next" style="display:none">다음 라운드 →</button>
+    </div>
+    <div id="fb"></div>
+  </div>
+  <p class="muted" style="text-align:center">💡 카드를 끌어다 놓거나, 카드를 탭한 다음 칸을 탭하세요. 놓은 카드를 다시 탭하면 위로 돌아가요.</p>
+</section>
+
+<!-- ============ ② 개수 타임어택 ============ -->
+<section id="p2" class="panel">
+  <div class="box" id="cStart">
+    <h2>개수 타임어택</h2>
+    <p class="muted">수능 선지처럼 <b>"다음 중 ○○에 해당하는 것의 개수는?"</b>을 시간 안에 맞혀요. 한 세트는 10문제예요.</p>
+    <div style="margin:12px 0 6px;font-weight:800">난이도</div>
+    <div class="row" id="lvBtns"></div>
+    <p class="muted" id="lvDesc" style="margin:8px 0 0"></p>
+    <div style="margin:14px 0 6px;font-weight:800">출제 범위</div>
+    <div class="row" id="scopeBtns"></div>
+    <div class="row" style="margin-top:16px"><button class="btn pri" id="cGo">▶ 시작</button><span class="muted" id="best"></span></div>
+  </div>
+  <div class="box" id="cPlay" style="display:none">
+    <div class="row sp"><span class="tag" id="cTag"></span><b id="cTime" style="font-size:18px"></b></div>
+    <div class="timer"><i id="cBar"></i></div>
+    <div class="q" id="cQ"></div>
+    <div class="items" id="cItems"></div>
+    <div class="nums" id="cNums"></div>
+    <div id="cFb"></div>
+    <div class="row" style="margin-top:12px"><button class="btn pri" id="cNext" style="display:none">다음 문제 →</button><button class="btn" id="cQuit">그만하기</button></div>
+  </div>
+  <div class="box" id="cEnd" style="display:none"></div>
+</section>
+
+<!-- ============ 실전 문항 ============ -->
+<section id="p4" class="panel">
+  <div class="box">
+    <div class="seg" id="pSeg"><button data-k="stmt" class="on">ㄱㄴㄷ 선지 판단</button><button data-k="table">표 해석</button><button data-k="pass">상황 지문</button></div>
+    <p class="muted" id="pDesc" style="margin:10px 0 0"></p>
+  </div>
+  <div class="box" id="pBox"></div>
+</section>
+
+<!-- ============ ③ 오답 + 개념노트 ============ -->
+<section id="p3" class="panel">
+  <div class="two">
+    <div>
+      <div class="box">
+        <h2>기준별 정답률</h2>
+        <p class="muted" style="margin:0 0 10px">카드 분류와 타임어택 기록을 합친 결과예요. 가장 낮은 기준부터 복습하세요.</p>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="box">
+        <div class="row sp"><h2 style="margin:0">오답 노트</h2><button class="btn sm" id="wClear">기록 초기화</button></div>
+        <div class="seg" style="margin-top:10px" id="wSeg">
+          <button data-f="todo" class="on">복습 필요</button><button data-f="done">극복함</button><button data-f="all">전체</button>
+        </div>
+        <p class="muted" style="margin:8px 0 0">틀린 카드는 <b>오늘 → 1일 → 3일 → 7일 뒤</b>에 다시 복습 대상이 돼요(간격 반복). 단계마다 맞혀 4단계를 마치면 ‘극복함’으로 옮겨져요. 위쪽 <b>‘오늘의 복습’</b> 버튼으로 시작하세요.</p>
+      </div>
+      <div id="wList"></div>
+    </div>
+    <div class="note" id="notes"></div>
+  </div>
+</section>
+</main>
+<div class="modal" id="set"><div class="sheet">
+  <div class="row sp"><h2 style="margin:0">⚙️ 설정</h2><button class="btn sm" id="setX">닫기</button></div>
+  <h3>화면</h3>
+  <div class="seg" id="thSeg"><button data-v="auto">기기 설정 따름</button><button data-v="light">라이트</button><button data-v="dark">다크</button></div>
+  <div class="seg" id="fsSeg" style="margin-top:8px"><button data-v="90">글자 작게</button><button data-v="100">기본</button><button data-v="115">크게</button><button data-v="130">아주 크게</button></div>
+  <h3>하루 목표 (문항 수)</h3>
+  <div class="seg" id="goalSeg"><button data-v="20">20</button><button data-v="30">30</button><button data-v="50">50</button><button data-v="80">80</button></div>
+  <p class="muted" style="margin:6px 0 0">카드 1장, 타임어택 1문제, 실전 1문항을 각각 1문항으로 세요.</p>
+  <h3>기록 백업 · 기기 간 옮기기</h3>
+  <p class="muted" style="margin:0 0 8px">아이패드에서 <b>코드 복사</b> → 메모/카톡으로 아이폰에 보내기 → 아이폰에서 붙여넣고 <b>불러오기</b>. 기존 기록과 합쳐지고, 같은 항목은 더 최근 기록을 사용해요.</p>
+  <div class="row"><button class="btn sm" id="bkCopy">📋 코드 복사</button><button class="btn sm" id="bkFile">💾 파일로 저장</button><label class="btn sm" style="display:inline-block">📂 파일 불러오기<input type="file" id="bkIn" accept=".json,application/json,text/plain" style="display:none"></label></div>
+  <textarea class="in" id="bkTxt" rows="3" placeholder="백업 코드를 여기에 붙여넣으세요" style="margin-top:8px"></textarea>
+  <div class="row" style="margin-top:6px"><button class="btn sm pri" id="bkLoad">붙여넣은 코드 불러오기</button></div>
+  <h3>나만의 카드 추가</h3>
+  <div class="trap" style="margin-top:0">⚠️ 교재·모의고사에서 헷갈린 사례를 추가하면 모든 게임에 함께 나와요. <b>정답과 해설을 확실히 확인한 뒤</b> 넣으세요. 해석이 갈리는 기준은 ‘분류 안 함’으로 두면 그 기준의 문제에는 나오지 않아요.</div>
+  <div class="fgrid"><div><label>이름 *</label><input class="in" id="cuN" placeholder="예: 방과 후 학교"></div><div><label>보충 설명</label><input class="in" id="cuD" placeholder="예: 학교가 운영"></div></div>
+  <div class="fgrid" id="cuSel"></div>
+  <label class="muted" style="font-size:12px;font-weight:700">해설</label><textarea class="in" id="cuT" rows="2" placeholder="왜 그렇게 분류되는지 적어 두면 틀렸을 때 보여줘요"></textarea>
+  <div class="row" style="margin-top:8px"><button class="btn sm pri" id="cuAdd">+ 카드 추가</button></div>
+  <div id="cuList" style="margin-top:10px"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   1. 개념 데이터
+   ※ 해석이 갈리는 분류는 데이터에서 '빈칸'으로 두어 출제하지 않음
+   sf 설립 목적 | sl 사회화 내용 | gc 접촉 방식 | gw 결합 의지
+   io 소속감(갑 기준) | fo 조직 형태 | va 자발적 결사체 여부(공식 조직만)
+   ===================================================================== */
+const E=[
+ {n:'가족',sf:'비공식적',sl:'1차적',gc:'1차 집단',gw:'공동 사회',t:'사회화를 목적으로 만든 기관이 아니라서 비공식적이에요. 기본 생활 양식을 가르치므로 1차적이에요. 대면·친밀 관계라서 1차 집단, 혈연으로 자연스럽게 결합하므로 공동 사회예요.'},
+ {n:'또래 집단',d:'함께 노는 친구 무리',sf:'비공식적',sl:'1차적',gc:'1차 집단',t:'설립 목적이 없으므로 비공식적이고, 교과서 기준으로 1차적 사회화 기관이에요. 친밀한 대면 관계라서 1차 집단이에요.'},
+ {n:'놀이 집단',d:'어린 시절 동네 친구들',gc:'1차 집단',t:'관계 자체가 목적인 친밀한 대면 집단이에요.'},
+ {n:'친족',gc:'1차 집단',gw:'공동 사회',t:'혈연에 따른 자연적 결합(본질 의지)이에요.'},
+ {n:'전통 촌락 공동체',gc:'1차 집단',gw:'공동 사회',t:'지연에 따른 자연적 결합이고 대면 접촉이 중심이에요.'},
+ {n:'민족',gc:'2차 집단',gw:'공동 사회',t:'⭐ 자연적으로 결합한 공동 사회지만, 구성원 모두가 대면 접촉하지 않으므로 2차 집단이에요. "공동 사회 = 1차 집단"이 아니라는 대표 반례예요.'},
+ {n:'학교',sf:'공식적',sl:'2차적',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'X',t:'교육이 설립 목적이라 공식적, 전문 지식·규범을 가르치므로 2차적이에요. 목적 달성을 위한 형식적 관계(2차 집단·이익 사회)이고, 규칙이 명문화된 공식 조직이에요. 자발적 결사체는 아니에요.'},
+ {n:'학원',sf:'공식적',sl:'2차적',t:'교육을 목적으로 설립되었으므로 공식적 사회화 기관이에요.'},
+ {n:'교도소',sf:'공식적',sl:'2차적',t:'재사회화(교정·교화)를 목적으로 설립되었으므로 공식적이에요.'},
+ {n:'신입 사원 연수원',sf:'공식적',sl:'2차적',t:'직무 교육을 목적으로 따로 세운 기관이라 공식적이에요. ⚠️ 회사 자체는 비공식적이에요!'},
+ {n:'신병 교육대',sf:'공식적',sl:'2차적',t:'신병 교육이 설립 목적이므로 공식적이에요.'},
+ {n:'직업 훈련소',sf:'공식적',sl:'2차적',t:'직업 기술 교육이 설립 목적이므로 공식적이에요.'},
+ {n:'평생 교육원',d:'노인 대학 등',sf:'공식적',sl:'2차적',t:'교육이 설립 목적이므로 공식적이에요. 대상이 성인이어도 공식적이라는 점에 주의하세요.'},
+ {n:'회사(직장)',sf:'비공식적',sl:'2차적',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'X',t:'⭐ 신입 사원 교육을 해도 설립 목적은 이윤 추구라서 비공식적 사회화 기관이에요. 공식 조직이지만 자발적 결사체는 아니에요.'},
+ {n:'대중 매체',d:'TV·인터넷·신문',sf:'비공식적',sl:'2차적',t:'정보 전달·오락이 주목적이므로 비공식적이에요. ⚠️ 사회 집단이 아니라서 1차/2차 집단 분류 대상이 아니에요.'},
+ {n:'종교 단체',sf:'비공식적',sl:'2차적',t:'신앙 활동이 주목적이고 사회화는 부수적이므로 비공식적이에요.'},
+ {n:'정당',sf:'비공식적',sl:'2차적',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'정권 획득이 목적이므로 비공식적 사회화 기관이에요. ⭐ 규칙과 위계를 갖춘 공식 조직이면서 자발적으로 가입·탈퇴하는 자발적 결사체예요.'},
+ {n:'시민 단체',d:'환경 운동 단체 등',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'공익을 위해 자발적으로 결성했고, 정관 등 공식 규칙을 갖춘 공식 조직이에요.'},
+ {n:'노동조합',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'근로 조건 개선이라는 공동 이익을 위해 자발적으로 결성한 공식 조직이에요.'},
+ {n:'자원봉사 단체',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'봉사라는 공통 목적으로 자발적으로 결성한 조직이에요.'},
+ {n:'소비자 단체',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'소비자 권익을 위해 자발적으로 결성한 조직이에요.'},
+ {n:'의사 협회',d:'직업 이익 단체',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'O',t:'구성원의 이익을 위해 자발적으로 결성한 이익 집단이에요.'},
+ {n:'정부 부처',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'X',t:'행정 목표 달성을 위해 지위·역할이 명문화된 공식 조직이에요.'},
+ {n:'종합 병원',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'X',t:'진료라는 목적을 위해 명문화된 공식 조직이에요.'},
+ {n:'군대',d:'징병제 국가',gc:'2차 집단',gw:'이익 사회',fo:'공식 조직',va:'X',t:'공식 조직이에요. 가입이 강제적이라서 자발적 결사체가 아니에요.'},
+ {n:'사내 등산 동호회',d:'A 회사 직원끼리 만든',fo:'비공식 조직',t:'공식 조직(회사) 안에서 관심사를 바탕으로 생긴 모임이라 비공식 조직이에요.'},
+ {n:'입사 동기 모임',d:'B 회사 같은 기수 직원',fo:'비공식 조직',t:'회사 안에서 친밀감으로 자연스럽게 생긴 모임이라 비공식 조직이에요.'},
+ {n:'교사 친목회',d:'같은 학교의 동향 교사들',fo:'비공식 조직',t:'학교(공식 조직) 안에서 친밀감으로 생긴 모임이라 비공식 조직이에요.'},
+ {n:'간호사 독서 모임',d:'C 병원 간호사들끼리',fo:'비공식 조직',t:'병원(공식 조직) 안에서 관심사로 생긴 모임이라 비공식 조직이에요.'}
+];
+const IO=[
+ {n:'갑이 함께 사는 가족',io:'내집단',gc:'1차 집단',t:'갑이 소속되어 있고 ‘우리’라고 느끼므로 내집단이에요.'},
+ {n:'갑이 다니며 애교심을 느끼는 학교',io:'내집단',gc:'2차 집단',t:'소속되어 있고 소속감도 있으므로 내집단이에요. 학교 자체는 2차 집단이에요.'},
+ {n:'갑과 매일 어울리는 단짝 무리',io:'내집단',gc:'1차 집단',t:'소속되어 있고 친밀한 대면 관계예요.'},
+ {n:'갑이 당원으로 활동 중인 정당',io:'내집단',gc:'2차 집단',t:'소속되어 활동하고 있으므로 내집단이에요.'},
+ {n:'갑이 소속감을 느끼는 D 회사',io:'내집단',gc:'2차 집단',t:'소속되어 있고 소속감이 있으므로 내집단이에요.'},
+ {n:'갑이 꾸준히 활동하는 봉사 단체',io:'내집단',gc:'2차 집단',t:'소속되어 있으므로 내집단이에요.'},
+ {n:'갑이 태어나 사는 촌락 공동체',io:'내집단',gc:'1차 집단',t:'소속되어 있고 대면 접촉이 중심인 집단이에요.'},
+ {n:'갑의 친구 을의 가족',io:'외집단',gc:'1차 집단',t:'⭐ 가족은 1차 집단이지만 갑은 소속되지 않으므로 외집단이에요.'},
+ {n:'갑의 회사와 경쟁하는 B 회사',io:'외집단',gc:'2차 집단',t:'갑이 소속되지 않았으므로 외집단이에요.'},
+ {n:'갑이 입사를 꿈꾸는 C 기업',d:'갑은 아직 미소속',io:'외집단',gc:'2차 집단',t:'⭐ 준거 집단이어도 소속되지 않았으면 외집단이에요.'},
+ {n:'갑이 가입을 원하는 E 정당',d:'갑은 아직 미소속',io:'외집단',gc:'2차 집단',t:'⭐ 가입을 원하더라도 아직 소속되지 않았으므로 외집단이에요.'},
+ {n:'갑의 학교와 결승에서 맞붙은 학교',io:'외집단',gc:'2차 집단',t:'소속되지 않은 경쟁 집단이라 외집단이에요.'},
+ {n:'옆 반 학생들의 친구 무리',d:'갑은 미소속',io:'외집단',gc:'1차 집단',t:'친밀한 1차 집단이지만 갑은 소속되지 않았으므로 외집단이에요.'},
+ {n:'갑이 지난해 탈퇴한 시민 단체',io:'외집단',gc:'2차 집단',t:'⭐ 탈퇴한 뒤로는 소속되어 있지 않으므로 외집단이에요.'}
+];
+const ALL=E.concat(IO);const BYN=Object.fromEntries(ALL.map(x=>[x.n,x]));
+
+/* 축(분류 기준) 정의 */
+const otOf=i=>!i.fo?null:i.fo==='비공식 조직'?'비공식 조직':(i.va==='O'?'공식 조직 · 자발적 결사체 O':'공식 조직 · 자발적 결사체 X');
+const AX={
+ sf:{lab:'설립 목적',vals:['공식적','비공식적'],get:i=>i.sf},
+ sl:{lab:'사회화 내용',vals:['1차적','2차적'],get:i=>i.sl},
+ gc:{lab:'접촉 방식',vals:['1차 집단','2차 집단'],get:i=>i.gc},
+ gw:{lab:'결합 의지',vals:['공동 사회','이익 사회'],get:i=>i.gw},
+ io:{lab:'소속감(갑 기준)',vals:['내집단','외집단'],get:i=>i.io},
+ ot:{lab:'조직 유형',vals:['공식 조직 · 자발적 결사체 O','공식 조직 · 자발적 결사체 X','비공식 조직'],get:otOf}
+};
+const WHY={
+ sf:{'공식적':'사회화를 <b>주된 목적</b>으로 설립된 기관','비공식적':'다른 목적으로 설립되었고 사회화는 <b>부수적으로</b> 담당하는 기관'},
+ sl:{'1차적':'언어·생활 습관·인성 같은 <b>기초적 사회화</b> 담당','2차적':'사회생활에 필요한 지식·기술·규범 같은 <b>전문적 사회화</b> 담당'},
+ gc:{'1차 집단':'<b>대면 접촉</b>, 친밀하고 전인격적인 관계 자체가 목적','2차 집단':'목적 달성을 위한 <b>간접적·형식적·수단적</b> 관계'},
+ gw:{'공동 사회':'<b>본질 의지</b>에 따라 선천적·자연적으로 결합','이익 사회':'<b>선택 의지</b>에 따라 목적·이익을 위해 인위적으로 결합'},
+ io:{'내집단':'<b>소속되어 있고</b> ‘우리’라는 소속감을 느끼는 집단','외집단':'<b>소속되지 않은</b> 집단'},
+ ot:{'공식 조직 · 자발적 결사체 O':'규칙·위계가 명문화된 <b>공식 조직</b>이면서 <b>자발적으로 결성</b>되어 가입·탈퇴가 자유로운 조직','공식 조직 · 자발적 결사체 X':'규칙·위계가 명문화된 공식 조직이지만 <b>공통 관심으로 자발적으로 결성된 결사체는 아님</b>','비공식 조직':'<b>공식 조직 내부</b>에서 친밀감·관심사로 자연스럽게 생긴 모임'}
+};
+
+/* 카드 분류 모드 */
+const MODES={
+ A:{name:'사회화 기관',sub:'설립 목적 × 사회화 내용',src:E,r:'sf',c:'sl',desc:'핵심은 그 기관을 <b>왜 세웠는가</b>예요. 누가 교육을 하느냐가 아니에요. 빗금 칸(공식적 + 1차적)에 해당하는 기관은 없어요.',na:['공식적|1차적']},
+ B:{name:'사회 집단',sub:'접촉 방식 × 결합 의지',src:E,r:'gc',c:'gw',desc:'접촉 방식(쿨리)과 결합 의지(퇴니스)는 서로 <b>다른 기준</b>이에요. 1차 집단이 항상 공동 사회인 것은 아니에요.',na:[]},
+ C:{name:'내집단 · 외집단',sub:'소속감 × 접촉 방식',src:IO,r:'io',c:'gc',desc:'<b>갑의 입장</b>에서 분류하세요. 같은 ‘가족’도 누구의 가족이냐에 따라 달라지고, 들어가고 싶은 집단이어도 미소속이면 외집단이에요.',na:[]},
+ D:{name:'사회 조직',sub:'공식 조직 · 결사체 · 비공식 조직',src:E,r:'ot',c:null,desc:'① 공식 조직 <b>안에서</b> 생긴 모임이면 비공식 조직이에요. ② 공식 조직이라면 <b>자발적으로 결성되었는지</b>를 따져서 자발적 결사체인지 판단하세요.',na:[]},
+ M:{name:'종합 랜덤',sub:'라운드마다 기준이 바뀜',desc:'실전처럼 기준을 섞어서 출제해요.'}
+};
+
+/* =====================================================================
+   2. 저장소 (기기별 localStorage)
+   ===================================================================== */
+const K={w:'sct_wrong_v2',s:'sct_stats_v2',b:'sct_best_v2'};
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let W=load(K.w,{}),S=load(K.s,{});
+function stat(ax,ok){S[ax]=S[ax]||{c:0,w:0};ok?S[ax].c++:S[ax].w++;save(K.s,S)}
+// 카드 오답: key=mode|item
+/* 간격 반복: 틀리면 오늘 복습 → 맞힐 때마다 1일·3일·7일 뒤 → 4단계 통과 시 극복 */
+const IV=[1,3,7],DAY=864e5;
+function wrongCard(mode,it,mine,ans){
+ const k='card|'+mode+'|'+it.n;const o=W[k]||{type:'card',mode,item:it.n,cnt:0};
+ o.cnt++;o.lvl=0;o.due=Date.now();o.mine=mine;o.ans=ans;o.last=Date.now();o.done=false;W[k]=o;save(K.w,W);
+}
+function rightCard(mode,it){
+ const k='card|'+mode+'|'+it.n;const o=W[k];
+ if(!o||o.done||(o.due||0)>Date.now()||Date.now()-(o.last||0)<6e5)return false; // 틀린 직후 재시도는 단계에 반영하지 않음
+ o.lvl=(o.lvl||0)+1;
+ if(o.lvl>IV.length){o.done=true;save(K.w,W);return true}
+ const d=new Date();d.setHours(4,0,0,0);o.due=d.getTime()+IV[o.lvl-1]*DAY;save(K.w,W);return false;
+}
+function dueCards(){const now=Date.now();return Object.values(W).filter(o=>o.type==='card'&&!o.done&&(o.due||0)<=now)}
+function dueTxt(o){if(o.done)return'';if((o.due||0)<=Date.now())return'🔔 오늘 복습';return'다음 복습 '+new Date(o.due).toLocaleDateString('ko-KR',{month:'short',day:'numeric'})}
+function wrongCount(o){
+ const k='cnt|'+Date.now()+'|'+Math.random().toString(36).slice(2,6);W[k]=Object.assign({type:'cnt',cnt:1,last:Date.now(),done:false},o);
+ // 타임어택 오답은 최근 60개만 유지
+ const ks=Object.keys(W).filter(x=>x.startsWith('cnt|')).sort((a,b)=>W[b].last-W[a].last);ks.slice(60).forEach(x=>delete W[x]);
+ save(K.w,W);
+}
+function todoCount(){return Object.values(W).filter(o=>!o.done).length}
+function updDot(){const n=todoCount(),d=$('#navDot');d.style.display=n?'inline-block':'none';d.textContent=n>99?'99+':n}
+
+/* 공용 */
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+function cardHTML(it){return esc(it.n)+(it.d?`<small>${esc(it.d)}</small>`:'')}
+
+/* 탭 */
+let curTab='p1';
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ if(curTab==='p2'&&b.dataset.p!=='p2'&&cs.playing){if(!confirm('타임어택이 진행 중이에요. 그만두고 이동할까요?'))return;stopSet(true)}
+ curTab=b.dataset.p;
+ document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===curTab));
+ if(curTab==='p3')renderP3();
+ if(curTab==='p4'&&!$('#pBox').innerHTML)newP();
+ window.scrollTo(0,0);
+});
+
+/* =====================================================================
+   3. ① 카드 분류 게임
+   ===================================================================== */
+const ROUND=8;
+let mode='A',rm,cards=[],place={},locked=new Set(),picked=null,phase='play',roundNo=0,fromWrong=false;
+const mb=$('#modeBtns');
+Object.entries(MODES).forEach(([k,m])=>{const b=document.createElement('button');b.className='mode';b.dataset.k=k;b.innerHTML=`<b>${m.name}</b><span>${m.sub}</span>`;b.onclick=()=>{mode=k;newRound(false)};mb.appendChild(b)});
+const okFor=(it,m)=>AX[m.r].get(it)&&(!m.c||AX[m.c].get(it));
+const keyOf=(it,m)=>AX[m.r].get(it)+'|'+(m.c?AX[m.c].get(it):'');
+
+/* 칸마다 골고루 뽑기: 칸별로 최소 1장 → 나머지는 무작위 */
+function pickBalanced(pool,m,n){
+ const byCell={};shuffle(pool).forEach(it=>{(byCell[keyOf(it,m)]=byCell[keyOf(it,m)]||[]).push(it)});
+ const out=[];Object.values(byCell).forEach(a=>out.push(a.shift()));
+ const rest=shuffle(Object.values(byCell).flat());
+ while(out.length<n&&rest.length)out.push(rest.shift());
+ return shuffle(out.slice(0,n));
+}
+function newRound(wrongOnly){
+ fromWrong=!!wrongOnly;
+ let mk=mode;
+ if(mode==='M'){const ks=['A','B','C','D'];mk=ks[Math.random()*4|0]}
+ rm=Object.assign({key:mk},MODES[mk]);
+ mb.querySelectorAll('.mode').forEach(b=>b.classList.toggle('sel',b.dataset.k===mode));
+ let pool=rm.src.filter(it=>okFor(it,rm));
+ if(fromWrong){
+  const keys=Object.values(W).filter(o=>o.type==='card'&&!o.done&&(o.due||0)<=Date.now()&&(mode==='M'||o.mode===mk)).map(o=>o.mode+'|'+o.item);
+  if(mode==='M'&&keys.length){const mk2=keys[Math.random()*keys.length|0].split('|')[0];rm=Object.assign({key:mk2},MODES[mk2]);pool=rm.src.filter(it=>okFor(it,rm))}
+  const set=new Set(keys);const wp=pool.filter(it=>set.has(rm.key+'|'+it.n));
+  if(!wp.length){toast('오늘 이 기준에서 복습할 카드가 없어요 👍');fromWrong=false}
+  else{const extra=pickBalanced(pool.filter(it=>!set.has(rm.key+'|'+it.n)),rm,Math.max(0,5-wp.length));cards=shuffle(wp.slice(0,ROUND).concat(extra))}
+ }
+ if(!fromWrong)cards=pickBalanced(pool,rm,ROUND);
+ place={};locked=new Set();picked=null;phase='play';if(!fromWrong)roundNo++;
+ $('#roundTag').textContent=(fromWrong?'오늘의 복습':'라운드 '+roundNo)+' · '+rm.name;
+ $('#modeDesc').innerHTML=rm.desc;
+ $('#fb').innerHTML='';$('#submit').style.display='';$('#retry').style.display='none';$('#next').style.display='none';
+ buildGrid();
+ const tr=$('#tray');tr.innerHTML='';
+ cards.forEach((it,i)=>tr.appendChild(mkCard(it,i)));
+ updProg();updMStat();
+}
+function buildGrid(){
+ const g=$('#grid');g.innerHTML='';
+ const rv=AX[rm.r].vals,cv=rm.c?AX[rm.c].vals:null;
+ if(cv){
+  g.style.gridTemplateColumns=`minmax(64px,.45fr) repeat(${cv.length},1fr)`;
+  g.appendChild(hd(`${AX[rm.r].lab} ↓<br>${AX[rm.c].lab} →`));
+  cv.forEach(c=>g.appendChild(hd(c,AX[rm.c].lab)));
+  rv.forEach(r=>{g.appendChild(hd(r,AX[rm.r].lab));cv.forEach(c=>g.appendChild(zone(r+'|'+c)))});
+ }else{
+  g.style.gridTemplateColumns=`repeat(${rv.length},1fr)`;
+  rv.forEach(r=>g.appendChild(hd(r,AX[rm.r].lab)));
+  rv.forEach(r=>g.appendChild(zone(r+'|')));
+ }
+}
+function hd(t,s){const d=document.createElement('div');d.className='gh';d.innerHTML=`<div>${t}${s?`<small>${s}</small>`:''}</div>`;return d}
+function zone(z){const d=document.createElement('div');d.className='zone';d.dataset.z=z;if(rm.na.includes(z))d.classList.add('na');d.onclick=e=>{if(e.target===d&&picked)moveCard(picked,d)};return d}
+$('#tray').onclick=e=>{if(e.target.id==='tray'&&picked)moveCard(picked,$('#tray'))};
+function mkCard(it,i){
+ const c=document.createElement('div');c.className='card';c.dataset.i=i;c.innerHTML=cardHTML(it);
+ c.addEventListener('pointerdown',e=>startDrag(e,c));return c;
+}
+function canMove(c){return phase==='play'&&!locked.has(+c.dataset.i)}
+function moveCard(c,target){
+ if(!canMove(c))return;
+ target.appendChild(c);c.classList.remove('picked');picked=null;
+ if(target.classList.contains('zone'))place[c.dataset.i]=target.dataset.z;else delete place[c.dataset.i];
+ updProg();
+}
+function updProg(){$('#prog').textContent=`배치 ${Object.keys(place).length}/${cards.length}`}
+let drag=null;
+function startDrag(e,c){
+ if(!canMove(c))return;
+ e.preventDefault();
+ drag={c,x:e.clientX,y:e.clientY,ghost:null,moved:false};
+ try{c.setPointerCapture(e.pointerId)}catch(_){}
+ const mv=ev=>{
+  if(!drag)return;
+  if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)>8){
+   drag.moved=true;const g=c.cloneNode(true);g.classList.add('ghost');g.classList.remove('picked');g.style.width=c.offsetWidth+'px';document.body.appendChild(g);drag.ghost=g;c.style.opacity=.3;
+   picked?.classList.remove('picked');picked=null;
+  }
+  if(drag.ghost){
+   drag.ghost.style.left=ev.clientX-c.offsetWidth/2+'px';drag.ghost.style.top=ev.clientY-22+'px';
+   document.querySelectorAll('.zone,#tray').forEach(z=>z.classList.remove('hover'));
+   const t=dropTarget(ev);if(t)t.classList.add('hover');
+   // 화면 끝에서 자동 스크롤 (아이폰 대비)
+   if(ev.clientY<70)window.scrollBy(0,-12);else if(ev.clientY>innerHeight-60)window.scrollBy(0,12);
+  }
+ };
+ const up=ev=>{
+  c.removeEventListener('pointermove',mv);c.removeEventListener('pointerup',up);c.removeEventListener('pointercancel',up);
+  document.querySelectorAll('.zone,#tray').forEach(z=>z.classList.remove('hover'));
+  if(!drag)return;
+  if(drag.moved){drag.ghost.remove();c.style.opacity=1;const t=dropTarget(ev);if(t)moveCard(c,t)}
+  else if(c.parentElement.classList.contains('zone')&&picked!==c){moveCard(c,$('#tray'))}  // 놓인 카드 탭 → 되돌리기
+  else if(picked===c){c.classList.remove('picked');picked=null}
+  else{picked?.classList.remove('picked');picked=c;c.classList.add('picked')}
+  drag=null;
+ };
+ c.addEventListener('pointermove',mv);c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+}
+function dropTarget(ev){const g=drag.ghost;g.style.display='none';const el=document.elementFromPoint(ev.clientX,ev.clientY);g.style.display='';return el&&el.closest('.zone,#tray')}
+
+function explainCard(it,m,mine){
+ const axes=[m.r].concat(m.c?[m.c]:[]);const ms=(mine||'|').split('|');
+ return axes.map((a,k)=>{const v=AX[a].get(it),ok=ms[k]===v;
+  return `${ok?'✅':'❌'} <b>${AX[a].lab}</b>: 정답 <b>${v}</b>${ok?'':` <span style="color:var(--no)">(내 답: ${ms[k]||'미배치'})</span>`}<br><span class="muted">→ ${WHY[a][v]}</span>`}).join('<br>')+`<br>💡 ${it.t}`;
+}
+const fmt=k=>k?k.replace(/\|$/,'').replace('|',' / '):'미배치';
+$('#submit').onclick=()=>{
+ if(phase!=='play')return;
+ const un=cards.length-Object.keys(place).length-0;
+ const unplaced=cards.filter((_,i)=>!locked.has(i)&&!place[i]).length;
+ if(unplaced){toast(`아직 놓지 않은 카드가 ${unplaced}장 있어요`);return}
+ phase='checked';
+ bump(cards.filter((_,i)=>!locked.has(i)).length);
+ let ok=0,wrong=0,freed=0;const out=[];
+ cards.forEach((it,i)=>{
+  const el=document.querySelector(`.card[data-i="${i}"]`);
+  if(locked.has(i)){ok++;return}
+  const right=keyOf(it,rm),ans=place[i];
+  // 축별 통계
+  const ms=ans.split('|');stat(rm.r,ms[0]===AX[rm.r].get(it));if(rm.c)stat(rm.c,ms[1]===AX[rm.c].get(it));
+  if(ans===right){ok++;locked.add(i);el.classList.add('right');if(rightCard(rm.key,it))freed++}
+  else{
+   wrong++;el.classList.add('wrong');
+   el.insertAdjacentHTML('beforeend',`<span class="ans">→ ${esc(fmt(right))}</span>`);
+   out.push(`<div class="fbi no">❌ <b>${esc(it.n)}</b><br>${explainCard(it,rm,ans)}</div>`);
+   wrongCard(rm.key,it,fmt(ans),fmt(right));
+  }
+ });
+ const perfect=!wrong;
+ $('#fb').innerHTML=`<div class="fbi ${perfect?'ok':'info'}"><span class="score">${ok} / ${cards.length}</span> ${perfect?'🎉 모두 정답!':'· 틀린 카드는 오답 노트에 저장했어요.'}${freed?`<br>🏅 오답 ${freed}개를 극복했어요!`:''}</div>`+out.join('');
+ $('#submit').style.display='none';
+ $('#retry').style.display=perfect?'none':'';
+ $('#next').style.display='';
+ updDot();updMStat();
+};
+$('#retry').onclick=()=>{
+ // 틀린 카드를 트레이로 되돌려 다시 풀기 (정답 표시는 지움)
+ cards.forEach((it,i)=>{if(locked.has(i))return;const el=document.querySelector(`.card[data-i="${i}"]`);el.classList.remove('wrong');el.querySelector('.ans')?.remove();$('#tray').appendChild(el);delete place[i]});
+ phase='play';$('#fb').innerHTML='<div class="fbi info">틀린 카드만 위로 돌아왔어요. 해설을 떠올리며 다시 놓아 보세요.</div>';
+ $('#submit').style.display='';$('#retry').style.display='none';$('#next').style.display='none';updProg();
+};
+$('#next').onclick=()=>{newRound(fromWrong);window.scrollTo({top:0,behavior:'smooth'})};
+$('#newRound').onclick=()=>newRound(false);
+$('#wrongRound').onclick=()=>newRound(true);
+function updMStat(){
+ const n=dueCards().length;
+ $('#mStat').textContent=n?`오늘 복습할 카드 ${n}개`:'';$('#wrongRound').disabled=!n;
+ renderDay();
+}
+
+/* =====================================================================
+   4. ② 개수 타임어택
+   need: 판단에 필요한 축(이 축이 확정된 사례만 보기에 등장)
+   ===================================================================== */
+const CQ=[
+ // 단일 기준
+ {s:'soc',lv:1,q:'<b>공식적</b> 사회화 기관',need:['sf'],f:i=>i.sf==='공식적'},
+ {s:'soc',lv:1,q:'<b>비공식적</b> 사회화 기관',need:['sf'],f:i=>i.sf==='비공식적'},
+ {s:'soc',lv:1,q:'<b>1차적</b> 사회화 기관',need:['sl'],f:i=>i.sl==='1차적'},
+ {s:'soc',lv:1,q:'<b>2차적</b> 사회화 기관',need:['sl'],f:i=>i.sl==='2차적'},
+ {s:'grp',lv:1,q:'<b>1차 집단</b>',need:['gc'],f:i=>i.gc==='1차 집단'},
+ {s:'grp',lv:1,q:'<b>2차 집단</b>',need:['gc'],f:i=>i.gc==='2차 집단'},
+ {s:'grp',lv:1,q:'<b>공동 사회</b>',need:['gw'],f:i=>i.gw==='공동 사회'},
+ {s:'grp',lv:1,q:'<b>이익 사회</b>',need:['gw'],f:i=>i.gw==='이익 사회'},
+ {s:'grp',lv:1,q:'갑에게 <b>내집단</b>인 것',need:['io'],f:i=>i.io==='내집단',src:IO},
+ {s:'grp',lv:1,q:'갑에게 <b>외집단</b>인 것',need:['io'],f:i=>i.io==='외집단',src:IO},
+ {s:'org',lv:1,q:'<b>공식 조직</b>',need:['ot'],f:i=>i.fo==='공식 조직'},
+ {s:'org',lv:1,q:'<b>자발적 결사체</b>',need:['ot'],f:i=>i.va==='O'},
+ {s:'org',lv:1,q:'<b>비공식 조직</b>',need:['ot'],f:i=>i.fo==='비공식 조직'},
+ // 복합 기준 (수능 선지형)
+ {s:'soc',lv:2,q:'<b>비공식적</b>이면서 <b>2차적</b>인 사회화 기관',need:['sf','sl'],f:i=>i.sf==='비공식적'&&i.sl==='2차적'},
+ {s:'soc',lv:2,q:'<b>공식적</b>이면서 <b>2차적</b>인 사회화 기관',need:['sf','sl'],f:i=>i.sf==='공식적'&&i.sl==='2차적'},
+ {s:'soc',lv:3,q:'<b>공식적</b>이면서 <b>1차적</b>인 사회화 기관',need:['sf','sl'],f:i=>i.sf==='공식적'&&i.sl==='1차적'},
+ {s:'grp',lv:2,q:'<b>1차 집단</b>이면서 <b>공동 사회</b>인 것',need:['gc','gw'],f:i=>i.gc==='1차 집단'&&i.gw==='공동 사회'},
+ {s:'grp',lv:3,q:'<b>2차 집단</b>이면서 <b>공동 사회</b>인 것',need:['gc','gw'],f:i=>i.gc==='2차 집단'&&i.gw==='공동 사회'},
+ {s:'grp',lv:2,q:'갑에게 <b>내집단</b>이면서 <b>2차 집단</b>인 것',need:['io','gc'],f:i=>i.io==='내집단'&&i.gc==='2차 집단',src:IO},
+ {s:'grp',lv:3,q:'갑에게 <b>외집단</b>이면서 <b>1차 집단</b>인 것',need:['io','gc'],f:i=>i.io==='외집단'&&i.gc==='1차 집단',src:IO},
+ {s:'org',lv:2,q:'<b>공식 조직</b>이면서 <b>자발적 결사체</b>인 것',need:['ot'],f:i=>i.fo==='공식 조직'&&i.va==='O'},
+ {s:'org',lv:3,q:'<b>자발적 결사체가 아닌 공식 조직</b>',need:['ot'],f:i=>i.fo==='공식 조직'&&i.va==='X'},
+ {s:'mix',lv:3,q:'<b>이익 사회</b>이면서 <b>자발적 결사체</b>인 것',need:['gw','ot'],f:i=>i.gw==='이익 사회'&&i.va==='O'},
+ {s:'mix',lv:3,q:'<b>비공식적 사회화 기관</b>이면서 <b>공식 조직</b>인 것',need:['sf','ot'],f:i=>i.sf==='비공식적'&&i.fo==='공식 조직'}
+];
+const LV={easy:{name:'이지',sec:60,n:6,max:1,desc:'단일 기준 문제만 나와요. 개념을 익히는 단계예요.'},
+          normal:{name:'노말',sec:40,n:8,max:2,desc:'“A이면서 B인 것” 같은 복합 기준이 섞여 나와요.'},
+          hard:{name:'하드',sec:25,n:10,max:3,desc:'정답이 0개인 함정 문제와 영역을 넘나드는 복합 기준까지 나와요.'}};
+const SCOPE={all:'전체',soc:'사회화 기관',grp:'사회 집단',org:'사회 조직'};
+let lv='normal',scope='all',cs={playing:false};
+const lb=$('#lvBtns'),sb=$('#scopeBtns');
+Object.entries(LV).forEach(([k,v])=>{const b=document.createElement('button');b.className='btn';b.dataset.k=k;b.innerHTML=`${v.name} <span class="muted">${v.sec}초</span>`;b.onclick=()=>{lv=k;drawLv()};lb.appendChild(b)});
+Object.entries(SCOPE).forEach(([k,v])=>{const b=document.createElement('button');b.className='btn';b.dataset.k=k;b.textContent=v;b.onclick=()=>{scope=k;drawLv()};sb.appendChild(b)});
+function drawLv(){
+ lb.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.k===lv));
+ sb.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.k===scope));
+ const L=LV[lv];$('#lvDesc').innerHTML=`문제당 <b>${L.sec}초</b> · 사례 <b>${L.n}개</b>. ${L.desc} 빨리 맞힐수록 보너스 점수, 연속으로 맞히면 콤보 보너스가 붙어요.`;
+ const b=load(K.b,{})[lv+'|'+scope];$('#best').textContent=b?`🏆 최고 기록 ${b}점`:'';
+}
+drawLv();
+const qPool=()=>CQ.filter(q=>q.lv<=LV[lv].max&&(scope==='all'||q.s===scope||(q.s==='mix'&&false)));
+$('#cGo').onclick=()=>{
+ cs={playing:true,i:0,ok:0,score:0,combo:0,maxCombo:0,miss:[],last:null};
+ $('#cStart').style.display='none';$('#cEnd').style.display='none';$('#cPlay').style.display='block';nextQ();
+};
+function genQ(){
+ const qs=qPool();let q;
+ // 직전과 같은 문제 피하기, 하드에서 함정(lv3) 비중 높이기
+ for(let t=0;t<10;t++){q=qs[Math.random()*qs.length|0];if(q!==cs.last)break}
+ cs.last=q;
+ const src=q.src||E;
+ const pool=src.filter(it=>q.need.every(a=>AX[a].get(it)));
+ const n=Math.min(LV[lv].n,pool.length);
+ const yes=shuffle(pool.filter(q.f)),no=shuffle(pool.filter(i=>!q.f(i)));
+ const lo=Math.max(0,n-no.length),hi=Math.min(yes.length,n);
+ // 정답 개수가 한쪽으로 쏠리지 않도록 lo~hi에서 균등하게
+ const k=lo+Math.floor(Math.random()*(hi-lo+1));
+ return {q,items:shuffle(yes.slice(0,k).concat(no.slice(0,n-k))),ans:k,n};
+}
+function nextQ(){
+ Object.assign(cs,genQ(),{done:false});
+ $('#cTag').innerHTML=`${LV[lv].name} · ${cs.i+1}/10 · ${cs.score}점${cs.combo>1?` · <span class="combo">${cs.combo}연속🔥</span>`:''}`;
+ $('#cQ').innerHTML=`다음 중 ${cs.q.q}의 개수는?`;
+ $('#cItems').innerHTML=cs.items.map(it=>`<div class="it">${cardHTML(it)}</div>`).join('');
+ const nb=$('#cNums');nb.innerHTML='';
+ for(let x=0;x<=cs.n;x++){const b=document.createElement('button');b.textContent=x;b.onclick=()=>answer(x,b);nb.appendChild(b)}
+ $('#cFb').innerHTML='';$('#cNext').style.display='none';
+ cs.dur=LV[lv].sec*1000;cs.end=performance.now()+cs.dur;
+ cancelAnimationFrame(cs.raf);tick();
+}
+function tick(){
+ if(!cs.playing||cs.done)return;
+ const left=Math.max(0,cs.end-performance.now());
+ $('#cTime').textContent=(left/1000).toFixed(1)+'초';
+ const bar=$('#cBar');bar.style.width=(left/cs.dur*100)+'%';bar.style.background=left<5000?'var(--no)':left<cs.dur/2?'var(--warn)':'var(--pri)';
+ if(left<=0){answer(null,null);return}
+ cs.raf=requestAnimationFrame(tick);
+}
+// 다른 앱으로 전환하면 일시정지
+document.addEventListener('visibilitychange',()=>{
+ if(!cs.playing||cs.done)return;
+ if(document.hidden){cs.pausedLeft=cs.end-performance.now();cancelAnimationFrame(cs.raf)}
+ else if(cs.pausedLeft!=null){cs.end=performance.now()+cs.pausedLeft;cs.pausedLeft=null;toast('다시 시작해요!');tick()}
+});
+function itemLine(it,q){
+ const v=q.need.map(a=>`${AX[a].lab}: ${AX[a].get(it)}`).join(' / ');
+ return `${q.f(it)?'🟢':'⚪'} <b>${esc(it.n)}</b> <span class="muted">— ${v}</span>`;
+}
+function answer(x,btn){
+ if(cs.done)return;cs.done=true;cancelAnimationFrame(cs.raf);
+ const q=cs.q,good=x===cs.ans,left=Math.max(0,(cs.end-performance.now())/1000);
+ let gain=0;
+ if(good){cs.ok++;cs.combo++;cs.maxCombo=Math.max(cs.maxCombo,cs.combo);gain=100+Math.round(left/LV[lv].sec*50)+(cs.combo>1?(cs.combo-1)*10:0);cs.score+=gain}
+ else cs.combo=0;
+ q.need.forEach(a=>stat(a,good));bump(1);
+ document.querySelectorAll('#cNums button').forEach(b=>{b.disabled=true;if(+b.textContent===cs.ans)b.classList.add('ok')});
+ if(btn&&!good)btn.classList.add('no');
+ document.querySelectorAll('#cItems .it').forEach((d,i)=>{if(q.f(cs.items[i]))d.classList.add('y')});
+ const plain=q.q.replace(/<[^>]+>/g,'');
+ const head=good?`⭕ 정답! +${gain}점`:(x===null?`⏰ 시간 초과! 정답은 ${cs.ans}개`:`❌ 오답 — 내 답 ${x}개 / 정답 ${cs.ans}개`);
+ const tips=cs.items.filter(it=>it.t.includes('⭐')).map(it=>`💡 <b>${esc(it.n)}</b>: ${it.t}`).join('<br>');
+ $('#cFb').innerHTML=`<div class="fbi ${good?'ok':'no'}"><b>${head}</b><br><br>${cs.items.map(it=>itemLine(it,q)).join('<br>')}${tips?'<br><br>'+tips:''}</div>`;
+ if(!good){
+  cs.miss.push(plain);
+  wrongCount({q:plain,lvName:LV[lv].name,mine:x===null?'시간 초과':x+'개',ans:cs.ans+'개',need:q.need,items:cs.items.map(it=>({n:it.n,y:q.f(it)}))});
+  updDot();
+ }
+ $('#cTag').innerHTML=`${LV[lv].name} · ${cs.i+1}/10 · ${cs.score}점`;
+ $('#cNext').style.display='inline-block';$('#cNext').textContent=cs.i>=9?'결과 보기 →':'다음 문제 →';
+}
+$('#cNext').onclick=()=>{cs.i++;cs.i>=10?stopSet(false):nextQ();window.scrollTo({top:0,behavior:'smooth'})};
+$('#cQuit').onclick=()=>{if(confirm('세트를 그만둘까요? (기록은 저장되지 않아요)'))stopSet(true)};
+function stopSet(aborted){
+ cancelAnimationFrame(cs.raf);const done=cs.playing;cs.playing=false;
+ $('#cPlay').style.display='none';
+ if(aborted||!done){$('#cStart').style.display='block';drawLv();return}
+ const bk=lv+'|'+scope,B=load(K.b,{}),newBest=!B[bk]||cs.score>B[bk];if(newBest){B[bk]=cs.score;save(K.b,B)}
+ const grade=cs.ok>=9?'S':cs.ok>=7?'A':cs.ok>=5?'B':'C';
+ const msg={S:'수능장에서도 흔들리지 않을 실력이에요!',A:'거의 다 왔어요. 틀린 기준만 개념 노트로 점검하세요.',B:'헷갈리는 기준이 있어요. 카드 분류로 기준을 다시 다져 보세요.',C:'이지 난이도나 카드 분류부터 차근차근 해 보세요.'}[grade];
+ $('#cEnd').innerHTML=`<h2>세트 결과 ${newBest?'<span class="tag w">🏆 최고 기록!</span>':''}</h2>
+ <div class="row" style="gap:24px;margin:10px 0"><div><div class="muted">등급</div><div class="score">${grade}</div></div><div><div class="muted">정답</div><div class="score">${cs.ok}/10</div></div><div><div class="muted">점수</div><div class="score">${cs.score}</div></div><div><div class="muted">최대 콤보</div><div class="score">${cs.maxCombo}</div></div></div>
+ <p class="muted">${msg}</p>${cs.miss.length?`<div class="fbi no"><b>틀린 문제</b><br>${cs.miss.map(esc).join('<br>')}</div>`:''}
+ <div class="row" style="margin-top:12px"><button class="btn pri" onclick="document.getElementById('cGo').click()">↻ 다시 도전</button><button class="btn" onclick="stopSet(true)">난이도 바꾸기</button><button class="btn" onclick="document.querySelector('nav button[data-p=p3]').click()">오답 노트 보기</button></div>`;
+ $('#cEnd').style.display='block';
+}
+window.stopSet=stopSet;
+
+/* =====================================================================
+   5. ③ 오답 노트 + 통계 + 개념 노트
+   ===================================================================== */
+let wf='todo';
+document.querySelectorAll('#wSeg button').forEach(b=>b.onclick=()=>{wf=b.dataset.f;document.querySelectorAll('#wSeg button').forEach(x=>x.classList.toggle('on',x===b));renderWrong()});
+function renderP3(){renderBars();renderWrong()}
+function renderBars(){
+ const keys=['sf','sl','gc','gw','io','ot'];
+ $('#bars').innerHTML=keys.map(k=>{const s=S[k]||{c:0,w:0},t=s.c+s.w,p=t?Math.round(s.c/t*100):null;
+  const col=p==null?'#ccc':p>=85?'var(--ok)':p>=60?'var(--warn)':'var(--no)';
+  return `<div class="bar"><b>${AX[k].lab}</b><div class="t"><i style="width:${p||0}%;background:${col}"></i></div><span class="muted">${p==null?'기록 없음':p+'% ('+t+')'}</span></div>`}).join('');
+}
+function renderWrong(){
+ updDot();
+ const list=Object.entries(W).filter(([k,o])=>wf==='all'||(wf==='done'?o.done:!o.done)).sort((a,b)=>(b[1].cnt-a[1].cnt)||(b[1].last-a[1].last));
+ if(!list.length){$('#wList').innerHTML=`<div class="box muted">${wf==='todo'?'복습할 오답이 없어요. 👍 게임에서 틀린 문제가 여기에 자동으로 쌓여요.':'아직 기록이 없어요.'}</div>`;return}
+ $('#wList').innerHTML=list.map(([k,o])=>{
+  const date=new Date(o.last).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  if(o.type==='card'){
+   const it=BYN[o.item],m=Object.assign({key:o.mode},MODES[o.mode]);
+   if(!it)return'';
+   return `<div class="wl"><div class="row sp"><span class="tag">카드 · ${m.name}</span><span class="muted">${o.done?'🏅 극복함':`틀린 횟수 ${o.cnt} · 복습 ${o.lvl||0}/4단계 · ${dueTxt(o)}`} · ${date}</span></div>
+   <h4>${esc(it.n)}${it.d?` <span class="muted">(${esc(it.d)})</span>`:''}</h4>
+   <div class="muted">최근 내 답: <b style="color:var(--no)">${esc(o.mine)}</b> · 정답: <b style="color:var(--ok)">${esc(o.ans)}</b></div>
+   <details style="margin-top:8px"><summary style="font-size:14px">해설 보기</summary><div style="font-size:14px;line-height:1.65;padding-bottom:10px">${explainCard(it,m,o.ans.replace(' / ','|')+(m.c?'':'|')).replace(/✅/g,'📌')}</div></details>
+   <div class="row"><button class="btn sm" onclick="delW('${esc(k)}')">삭제</button></div></div>`;
+  }
+  if(o.type==='gen')return `<div class="wl"><div class="row sp"><span class="tag w">실전 · ${esc(o.kind)}</span><span class="muted">${o.done?'🏅 극복함 ':''}${date}</span></div>
+  <h4>${esc(o.q)}</h4><div class="muted">내 답: <b style="color:var(--no)">${esc(o.mine)}</b> · 정답: <b style="color:var(--ok)">${esc(o.ans)}</b></div>
+  <details style="margin-top:8px"><summary style="font-size:14px">문제·해설 보기</summary><div style="font-size:14px;line-height:1.65;padding-bottom:10px">${o.html}</div></details>
+  <div class="row">${o.done?'':`<button class="btn sm" onclick="doneW('${esc(k)}')">✔ 이해했어요</button>`}<button class="btn sm" onclick="delW('${esc(k)}')">삭제</button></div></div>`;
+  const q=CQ.find(c=>c.q.replace(/<[^>]+>/g,'')===o.q);
+  const lines=o.items.map(x=>{const it=BYN[x.n];return it?`${x.y?'🟢':'⚪'} <b>${esc(it.n)}</b> <span class="muted">— ${(o.need||[]).map(a=>AX[a].lab+': '+AX[a].get(it)).join(' / ')}</span>`:''}).join('<br>');
+  return `<div class="wl"><div class="row sp"><span class="tag w">타임어택 · ${esc(o.lvName)}</span><span class="muted">${o.done?'🏅 극복함':''} ${date}</span></div>
+  <h4>${esc(o.q)}의 개수</h4><div class="muted">내 답: <b style="color:var(--no)">${esc(o.mine)}</b> · 정답: <b style="color:var(--ok)">${esc(o.ans)}</b></div>
+  <details style="margin-top:8px"><summary style="font-size:14px">해설 보기</summary><div style="font-size:14px;line-height:1.7;padding-bottom:10px">${lines}</div></details>
+  <div class="row">${o.done?'':`<button class="btn sm" onclick="doneW('${esc(k)}')">✔ 이해했어요</button>`}<button class="btn sm" onclick="delW('${esc(k)}')">삭제</button></div></div>`;
+ }).join('');
+}
+window.delW=k=>{delete W[k];save(K.w,W);renderWrong();updMStat()};
+window.doneW=k=>{if(W[k]){W[k].done=true;save(K.w,W);renderWrong()}};
+$('#wClear').onclick=()=>{if(confirm('오답 노트와 정답률 통계를 모두 지울까요?')){W={};S={};save(K.w,W);save(K.s,S);renderP3();updMStat()}};
+
+$('#notes').innerHTML=`
+<details open><summary>🧭 수능 풀이 순서 (먼저 읽기)</summary>
+<ol style="line-height:1.85;font-size:14px;padding-left:20px;margin-top:0">
+<li>무엇을 묻는지 확인해요: <b>사회화 기관</b>인지, <b>사회 집단</b>인지, <b>사회 조직</b>인지.</li>
+<li>어떤 <b>기준</b>인지 표시해요: 설립 목적 / 사회화 내용 / 접촉 방식 / 결합 의지 / 소속감 / 조직 형태.</li>
+<li>내·외집단 문제는 <b>‘누구의 입장’</b>인지 밑줄을 그어요.</li>
+<li>사회화 기관은 ‘누가 가르치나’가 아니라 <b>‘왜 세웠나’</b>로 판단해요.</li>
+<li>‘모두’, ‘항상’, ‘반드시’가 나오면 반례부터 떠올려요: 민족, 회사, 준거 집단, 정당.</li>
+</ol></details>
+
+<details open><summary>📘 사회화 기관</summary>
+<table><tr><th>기준</th><th>구분</th><th>대표 예시</th></tr>
+<tr><td rowspan="2">설립 목적</td><td><b>공식적</b><br>사회화가 주목적</td><td>학교, 학원, 교도소, 직업 훈련소, 신입 사원 연수원, 신병 교육대, 평생 교육원</td></tr>
+<tr><td><b>비공식적</b><br>사회화가 부수적</td><td>가족, 또래 집단, 회사(직장), 대중 매체, 종교 단체, 정당</td></tr>
+<tr><td rowspan="2">사회화 내용</td><td><b>1차적</b><br>기초적 사회화</td><td>가족, 또래 집단</td></tr>
+<tr><td><b>2차적</b><br>전문적 사회화</td><td>학교, 직장, 대중 매체 등 나머지 대부분</td></tr></table>
+<div class="trap">⚠️ <b>회사가 연수를 해도 회사는 비공식적</b>이에요. 교육을 목적으로 따로 세운 ‘연수원’만 공식적이에요.</div>
+<div class="trap">⚠️ <b>1차적 사회화 기관은 모두 비공식적</b>이에요(가족·또래 집단). 하지만 “비공식적이면 1차적”은 틀린 말이에요. 직장과 대중 매체는 비공식적이면서 2차적이에요.</div>
+<div class="trap">⚠️ 판단 기준은 대상의 나이가 아니라 <b>설립 목적</b>이에요. 노인 대학도 교육이 목적이면 공식적이에요.</div>
+<div class="trap">⚠️ 교도소는 <b>재사회화</b>를 담당하는 공식적 사회화 기관이에요.</div>
+<div class="trap">⚠️ 대중 매체는 사회화 기관이지만 <b>사회 집단이 아니에요</b>. 그래서 1차/2차 집단으로 분류할 수 없어요.</div>
+</details>
+
+<details open><summary>📗 사회 집단</summary>
+<table><tr><th>기준</th><th>구분</th><th>예시</th></tr>
+<tr><td rowspan="2">접촉 방식<br>(쿨리)</td><td><b>1차 집단</b><br>대면·친밀·전인격적</td><td>가족, 또래 집단, 놀이 집단, 친족, 촌락 공동체</td></tr>
+<tr><td><b>2차 집단</b><br>간접·형식적·수단적</td><td>회사, 학교, 정당, 군대, 시민 단체, <b>민족</b></td></tr>
+<tr><td rowspan="2">결합 의지<br>(퇴니스)</td><td><b>공동 사회</b><br>본질 의지, 자연적</td><td>가족, 친족, 촌락 공동체, <b>민족</b></td></tr>
+<tr><td><b>이익 사회</b><br>선택 의지, 인위적</td><td>회사, 학교, 정당, 시민 단체</td></tr>
+<tr><td rowspan="2">소속감<br>(섬너)</td><td><b>내집단</b><br>소속 + ‘우리’ 의식</td><td>‘내’ 가족, ‘내’ 학교</td></tr>
+<tr><td><b>외집단</b><br>미소속, ‘그들’</td><td>남의 가족, 경쟁 학교, 입사를 원하는 회사</td></tr></table>
+<div class="trap">⚠️ <b>1차 집단과 공동 사회는 같은 말이 아니에요.</b> 민족은 공동 사회이지만 2차 집단이에요. 가족은 둘 다 해당하지만 이유가 각각 달라요.</div>
+<div class="trap">⚠️ 내·외집단은 집단 자체의 성질이 아니라 <b>‘누구’ 기준인지</b>로 정해져요.</div>
+<div class="trap">⚠️ <b>준거 집단과 내집단은 달라요.</b> 들어가고 싶은 집단이라도 소속되지 않았으면 외집단이에요. 준거 집단은 내집단일 수도 있고 외집단일 수도 있어요.</div>
+<div class="trap">⚠️ 탈퇴한 집단은 더 이상 <b>외집단</b>이 아니라고 착각하기 쉬워요. 소속되어 있지 않으면 외집단이에요.</div>
+<div class="trap">⚠️ <b>1차적 사회화 기관과 1차 집단은 기준이 달라요.</b> 앞은 사회화 내용, 뒤는 접촉 방식이에요.</div>
+</details>
+
+<details open><summary>📙 사회 조직</summary>
+<table><tr><th>구분</th><th>특징</th><th>예시</th></tr>
+<tr><td><b>공식 조직</b></td><td>목표 달성을 위해 지위·역할·규칙이 명문화, 위계 구조</td><td>회사, 학교, 정부 부처, 병원, 군대, (정당, 시민 단체)</td></tr>
+<tr><td><b>비공식 조직</b></td><td>공식 조직 <b>안에서</b> 친밀감·관심사로 자연 발생</td><td>사내 동호회, 입사 동기 모임, 교사 친목회</td></tr>
+<tr><td><b>자발적 결사체</b></td><td>공통 관심·목적으로 <b>자발적</b> 결성, 가입·탈퇴 자유</td><td>시민 단체, 정당, 노동조합, 봉사 단체, 이익 단체</td></tr></table>
+<div class="trap">⚠️ <b>자발적 결사체와 공식 조직은 함께 성립할 수 있어요.</b> 정당과 시민 단체는 공식 조직이면서 자발적 결사체예요. “자발적 결사체는 공식 조직이 아니다”는 틀린 선지예요.</div>
+<div class="trap">⚠️ 비공식 조직은 <b>공식 조직 안에서</b> 생겨요. 순기능은 심리적 안정, 소속감, 경직성 완화이고, 역기능은 파벌 형성, 공식 목표 저해예요.</div>
+<div class="trap">⚠️ 징병제 군대는 가입이 강제라서 <b>자발적 결사체가 아니에요</b>.</div>
+<div class="trap">⚠️ 회사·학교·정부는 공식 조직이지만 자발적 결사체가 아니에요. 회원의 공통 관심으로 자발적으로 결성된 조직이 아니기 때문이에요.</div>
+</details>
+<p class="muted" style="font-size:12px">※ 교과서·출제자에 따라 해석이 갈리는 분류(예: 또래 집단의 결합 의지, 비공식 조직의 자발적 결사체 여부, 종교 단체의 집단 유형)는 문제로 내지 않아요.</p>`;
+
+/* =====================================================================
+   6. 하루 기록 · 연속 학습
+   ===================================================================== */
+K.d='sct_day_v1';K.c='sct_custom_v1';K.o='sct_opt_v1';
+let D=load(K.d,{days:{},goal:30});
+const rnd=n=>Math.random()*n|0;
+const dk=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>dk(new Date());
+function bump(n){if(!n)return;const t=today(),b=D.days[t]||0;D.days[t]=b+n;save(K.d,D);renderDay();if(b<D.goal&&b+n>=D.goal)toast('🎯 오늘 목표 달성! 수고했어요')}
+function streak(){let s=0;const d=new Date();if(!D.days[dk(d)])d.setDate(d.getDate()-1);while(D.days[dk(d)]>0){s++;d.setDate(d.getDate()-1)}return s}
+function renderDay(){
+ const n=D.days[today()]||0;$('#dStreak').textContent=streak();$('#dToday').textContent=`${n} / ${D.goal}`;$('#dBar').style.width=Math.min(100,n/D.goal*100)+'%';
+ const w=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);w.push(`<i class="${D.days[dk(d)]?'on':''}">${'일월화수목금토'[d.getDay()]}</i>`)}$('#dWeek').innerHTML=w.join('');
+ const r=dueCards().length,b=$('#dRev');b.textContent=r?`🔔 오늘의 복습 ${r}`:'복습 완료 ✓';b.disabled=!r;
+}
+$('#dRev').onclick=()=>{document.querySelector('nav button[data-p=p1]').click();if(curTab!=='p1')return;mode='M';newRound(true)};
+function wrongGen(o){
+ W['gen|'+Date.now()+'|'+Math.random().toString(36).slice(2,6)]=Object.assign({type:'gen',cnt:1,last:Date.now(),done:false},o);
+ Object.keys(W).filter(x=>x.startsWith('gen|')).sort((a,b)=>W[b].last-W[a].last).slice(80).forEach(x=>delete W[x]);
+ save(K.w,W);updDot();
+}
+
+/* =====================================================================
+   7. 실전 문항 (선지 판단 · 표 해석 · 상황 지문)
+   ===================================================================== */
+const jo=(w,a,b)=>{const s=w.replace(/\([^)]*\)$/,'');const c=s.charCodeAt(s.length-1);if(c<0xAC00||c>0xD7A3)return w+a;return w+(((c-0xAC00)%28)?a:b)};
+const lb_=i=>i.n+(i.d?`(${i.d})`:'');
+const GEN=[
+[1,'공식적 사회화 기관은 사회화를 주된 목적으로 설립된 기관이다.','공식적/비공식적을 나누는 기준은 설립 목적이에요.'],
+[0,'1차적 사회화 기관은 모두 공식적 사회화 기관이다.','1차적 사회화 기관(가족, 또래 집단)은 모두 비공식적이에요.'],
+[1,'1차적 사회화 기관은 모두 비공식적 사회화 기관이다.','가족, 또래 집단 모두 사회화를 목적으로 설립되지 않았어요.'],
+[0,'비공식적 사회화 기관은 모두 1차적 사회화를 담당한다.','회사, 대중 매체처럼 비공식적이면서 2차적인 기관이 있어요.'],
+[0,'회사가 신입 사원 교육을 실시하면 회사는 공식적 사회화 기관이 된다.','설립 목적(이윤 추구)은 바뀌지 않으므로 회사는 여전히 비공식적이에요.'],
+[1,'교도소는 재사회화를 담당하는 공식적 사회화 기관이다.','교정·교화를 목적으로 설립되었어요.'],
+[0,'성인을 대상으로 교육하는 기관은 비공식적 사회화 기관이다.','평생 교육원처럼 교육이 설립 목적이면 대상의 나이와 관계없이 공식적이에요.'],
+[0,'대중 매체는 2차 집단에 해당한다.','대중 매체는 사회화 기관이지만 사회 집단이 아니에요.'],
+[0,'공동 사회는 모두 1차 집단이다.','민족은 공동 사회이지만 2차 집단이에요.'],
+[0,'2차 집단은 모두 이익 사회에 해당한다.','민족은 2차 집단이지만 공동 사회예요.'],
+[1,'민족은 공동 사회이면서 2차 집단에 해당한다.','본질 의지로 결합했지만 구성원 전체가 대면 접촉하지는 않아요.'],
+[1,'1차 집단과 2차 집단은 구성원 간의 접촉 방식에 따른 구분이다.','쿨리의 구분이에요. 결합 의지(퇴니스)와는 다른 기준이에요.'],
+[1,'공동 사회는 본질 의지에 따라 결합한 집단이다.','퇴니스의 구분이에요.'],
+[0,'이익 사회는 본질 의지에 의해 자연 발생적으로 형성된다.','이익 사회는 선택 의지에 따른 인위적 결합이에요.'],
+[1,'내집단과 외집단은 소속 여부와 소속감에 따라 구분된다.','섬너의 구분이에요.'],
+[0,'준거 집단은 항상 내집단이다.','소속되지 않은 외집단도 준거 집단이 될 수 있어요.'],
+[1,'외집단이 개인의 준거 집단이 될 수 있다.','입사하고 싶은 회사처럼 미소속 집단도 행동·판단의 기준이 될 수 있어요.'],
+[0,'어떤 집단이 내집단인지는 누구의 입장에서든 같다.','내·외집단은 기준이 되는 사람에 따라 달라져요.'],
+[1,'같은 가족이라도 그 구성원에게는 내집단, 다른 사람에게는 외집단이다.','소속 여부에 따라 달라져요.'],
+[0,'자발적 결사체는 공식 조직에 해당할 수 없다.','정당, 시민 단체는 공식 조직이면서 자발적 결사체예요.'],
+[1,'정당은 공식 조직이면서 자발적 결사체에 해당한다.','명문화된 규칙과 위계를 갖추었고, 자발적으로 가입·탈퇴해요.'],
+[1,'비공식 조직은 공식 조직 내에서 친밀감이나 관심사를 바탕으로 형성된다.','사내 동호회, 입사 동기 모임이 대표적이에요.'],
+[0,'비공식 조직은 공식 조직과 무관하게 외부에서 결성된다.','비공식 조직은 공식 조직 안에서 생겨나요.'],
+[1,'비공식 조직은 구성원의 심리적 안정과 소속감을 높일 수 있다.','비공식 조직의 순기능이에요.'],
+[0,'비공식 조직은 공식 조직의 목표 달성에 항상 도움이 된다.','파벌 형성처럼 공식 목표를 저해하는 역기능도 있어요.'],
+[1,'공식 조직은 지위와 역할, 규칙이 명문화되어 있다.','공식 조직의 특징이에요.'],
+[0,'징병제 국가의 군대는 자발적 결사체에 해당한다.','가입이 강제적이므로 자발적 결사체가 아니에요.'],
+[0,'자발적 결사체는 가입은 자유롭지만 탈퇴는 자유롭지 않다.','가입과 탈퇴 모두 자유로워요.'],
+[1,'1차적 사회화 기관과 1차 집단은 서로 다른 기준에 따른 구분이다.','사회화 내용에 따른 구분과 접촉 방식에 따른 구분이에요.'],
+[1,'학교는 공식적 사회화 기관이면서 공식 조직이다.','교육 목적으로 설립되었고 규칙이 명문화되어 있어요.'],
+[0,'회사는 비공식적 사회화 기관이므로 비공식 조직에 해당한다.','사회화 기관 구분과 조직 구분은 기준이 달라요. 회사는 공식 조직이에요.'],
+[1,'또래 집단은 비공식적 사회화 기관이면서 1차적 사회화 기관이다.','설립 목적이 없고 기초적 사회화를 담당해요.'],
+[0,'학원은 사회화를 부수적으로 담당하는 비공식적 사회화 기관이다.','교육이 설립 목적이므로 공식적이에요.']
+].map(([v,s,e])=>({v:!!v,s,e}));
+const CLAIM={sf:{'공식적':'공식적 사회화 기관이다.','비공식적':'비공식적 사회화 기관이다.'},sl:{'1차적':'1차적 사회화 기관이다.','2차적':'2차적 사회화 기관이다.'},
+ gc:{'1차 집단':'1차 집단이다.','2차 집단':'2차 집단이다.'},gw:{'공동 사회':'공동 사회에 해당한다.','이익 사회':'이익 사회에 해당한다.'},io:{'내집단':'갑에게 내집단이다.','외집단':'갑에게 외집단이다.'}};
+function instStmt(want){
+ for(let t=0;t<80;t++){
+  if(Math.random()<.3){ // 복합 진술
+   const pr=[['sf','sl'],['gc','gw']][rnd(2)];const pool=E.filter(i=>AX[pr[0]].get(i)&&AX[pr[1]].get(i));const it=pool[rnd(pool.length)];
+   const ra=AX[pr[0]].get(it),rb=AX[pr[1]].get(it);let a=ra,b=rb;
+   if(!want){const fl=(ax,v)=>AX[ax].vals.find(x=>x!==v);const r=rnd(3);if(r!==1)a=fl(pr[0],a);if(r!==0)b=fl(pr[1],b)}
+   const s=pr[0]==='sf'?`${jo(lb_(it),'은','는')} ${a}이면서 ${b}인 사회화 기관이다.`:`${jo(lb_(it),'은','는')} ${a}이면서 ${b}에 해당한다.`;
+   return{s,v:want,e:`<b>${esc(it.n)}</b>: ${ra} · ${rb}. ${it.t}`};
+  }
+  const ax=['sf','sl','gc','gw','io','ot'][rnd(6)];const src=ax==='io'?IO:E;const it=src[rnd(src.length)];
+  if(ax==='ot'){
+   if(!it.fo)continue;
+   const cl=[['공식 조직이다.',it.fo==='공식 조직'],['비공식 조직이다.',it.fo==='비공식 조직'],['자발적 결사체에 해당한다.',it.va==='O']][rnd(3)];
+   if(cl[0].startsWith('자발적')&&it.fo==='비공식 조직')continue; // 해석이 갈리는 조합은 출제 안 함
+   if(cl[1]!==want)continue;
+   return{s:`${jo(lb_(it),'은','는')} ${cl[0]}`,v:want,e:`<b>${esc(it.n)}</b>: ${otOf(it)}. ${it.t}`};
+  }
+  const v=AX[ax].get(it);if(!v)continue;
+  const cv=want?v:AX[ax].vals.find(x=>x!==v);
+  return{s:`${jo(lb_(it),'은','는')} ${CLAIM[ax][cv]}`,v:want,e:`<b>${esc(it.n)}</b>: ${AX[ax].lab} 기준 <b>${v}</b>. ${it.t}`};
+ }
+ return null;
+}
+const pickGen=want=>{const p=GEN.filter(g=>g.v===want);return p[rnd(p.length)]};
+function randT(){const r=Math.random(),n=r<.15?1:r<.65?2:3;return shuffle([0,1,2,3]).slice(0,n).sort()}
+function buildSet(T,fn){const st=[],seen=new Set();for(let i=0;i<4;i++){const want=T.includes(i);let s=null;for(let t=0;t<100&&!s;t++){const c=fn(want,i);if(c&&!seen.has(c.s))s=c}seen.add(s.s);st.push(s)}return st}
+function opts(T){
+ const key=s=>s.join(','),all=[];for(let m=1;m<16;m++){const s=[0,1,2,3].filter(i=>m>>i&1);if(s.length<=3)all.push(s)}
+ const pick=[T];
+ for(const s of shuffle(all)){if(pick.length>=5)break;if(key(s)!==key(T)&&Math.abs(s.length-T.length)<=1&&!pick.some(p=>key(p)===key(s)))pick.push(s)}
+ for(const s of shuffle(all)){if(pick.length>=5)break;if(!pick.some(p=>key(p)===key(s)))pick.push(s)}
+ return pick.sort((a,b)=>a.length-b.length||key(a).localeCompare(key(b)));
+}
+const GL='ㄱㄴㄷㄹ',NL='①②③④⑤';
+let pk='stmt',ps={ok:0,n:0};
+const PD={stmt:'수능처럼 ㄱ~ㄹ 진술이 옳은지 판단해서 옳은 것만 고른 선지를 찾아요. ‘모두’, ‘항상’ 같은 일반화 표현에 주의하세요.',
+ table:'질문에 대한 응답 표를 보고 A~C가 무엇인지 먼저 추론한 뒤 진술을 판단해요. 고난도 문항의 기본 구조예요.',
+ pass:'지문에 밑줄 친 사례를 주어진 기준에 따라 분류해요. 이름만 보는 게 아니라 상황 속에서 찾아내는 연습이에요.'};
+document.querySelectorAll('#pSeg button').forEach(b=>b.onclick=()=>{pk=b.dataset.k;document.querySelectorAll('#pSeg button').forEach(x=>x.classList.toggle('on',x===b));newP()});
+function pHead(kind){return`<div class="row sp"><span class="tag">${kind}</span><span class="muted">${ps.n?`이번 학습 ${ps.ok}/${ps.n} 정답`:''}</span></div>`}
+function newP(){$('#pDesc').textContent=PD[pk];({stmt:genStmtQ,table:genTableQ,pass:genPassQ})[pk]();window.scrollTo({top:0,behavior:'smooth'})}
+window.newP=newP;
+function askChoice(q){
+ const op=opts(q.T),ai=op.findIndex(s=>s.join()===q.T.join()),B=$('#pBox');
+ B.innerHTML=pHead(q.kind)+(q.pre||'')+`<div class="q" style="font-size:18px">${q.ask}</div><div class="bogi"><div class="tt">&lt;보기&gt;</div>${q.st.map((s,i)=>`<div>${GL[i]}. ${esc(s.s)}</div>`).join('')}</div>
+ <div class="opts" id="pOpts">${op.map((s,i)=>`<button class="btn" data-i="${i}">${NL[i]} ${s.map(x=>GL[x]).join(', ')}</button>`).join('')}</div><div id="pFb"></div>`;
+ B.querySelectorAll('#pOpts button').forEach(b=>b.onclick=()=>{
+  const i=+b.dataset.i,good=i===ai;ps.n++;if(good)ps.ok++;bump(1);
+  B.querySelectorAll('#pOpts button').forEach(x=>{x.disabled=true;x.style.opacity=1;if(+x.dataset.i===ai)x.classList.add('ok')});if(!good)b.classList.add('no');
+  const ex=(q.info?`<div class="fbi info">${q.info}</div>`:'')+q.st.map((s,k)=>`<div class="fbi ${s.v?'ok':'no'}"><b>${GL[k]}. ${s.v?'⭕ 옳음':'❌ 옳지 않음'}</b> — ${esc(s.s)}<br><span class="muted">→ ${s.e}</span></div>`).join('');
+  $('#pFb').innerHTML=`<div class="fbi ${good?'ok':'no'}" style="margin-top:12px"><b>${good?'⭕ 정답!':`❌ 오답 — 정답은 ${NL[ai]}`}</b></div>${ex}<div class="row" style="margin-top:12px"><button class="btn pri" onclick="newP()">다음 문제 →</button></div>`;
+  if(!good)wrongGen({kind:q.kind,q:q.st.map((s,k)=>GL[k]+'. '+s.s).join(' / ').slice(0,100)+'…',mine:NL[i]+' '+op[i].map(x=>GL[x]).join(','),ans:NL[ai]+' '+q.T.map(x=>GL[x]).join(','),html:(q.pre||'')+ex});
+ });
+}
+function genStmtQ(){
+ const T=randT(),kinds=shuffle(['g','g','i','i']);
+ askChoice({kind:'ㄱㄴㄷ 선지 판단',ask:'사회화 기관, 사회 집단, 사회 조직에 대한 옳은 설명만을 &lt;보기&gt;에서 있는 대로 고른 것은?',T,st:buildSet(T,(want,i)=>kinds[i]==='g'?pickGen(want):instStmt(want))});
+}
+const TB=[
+ {name:'사회화 기관',ax:['sf','sl'],qs:['사회화를 주된 목적으로 설립되었는가?','기초적 사회화를 주로 담당하는가?'],ph:['사회화를 주된 목적으로 설립되었다','기초적 사회화를 주로 담당한다'],
+  cats:[{v:['공식적','2차적'],y:[1,0]},{v:['비공식적','1차적'],y:[0,1]},{v:['비공식적','2차적'],y:[0,0]}],nm:c=>`${c.v[0]}이면서 ${c.v[1]}인 사회화 기관`},
+ {name:'사회 집단',ax:['gc','gw'],qs:['구성원 간 대면 접촉과 친밀한 관계가 중심인가?','본질 의지에 따라 자연적으로 결합하였는가?'],ph:['구성원 간 대면 접촉과 친밀한 관계가 중심이다','본질 의지에 따라 자연적으로 결합한다'],
+  cats:[{v:['1차 집단','공동 사회'],y:[1,1]},{v:['2차 집단','공동 사회'],y:[0,1]},{v:['2차 집단','이익 사회'],y:[0,0]}],nm:c=>`${c.v[0]}이면서 ${c.v[1]}`}
+];
+function genTableQ(){
+ const tb=TB[rnd(TB.length)],cats=shuffle(tb.cats),L='ABC';
+ const mem=c=>E.filter(i=>AX[tb.ax[0]].get(i)===c.v[0]&&AX[tb.ax[1]].get(i)===c.v[1]);
+ const pre=`<div class="muted" style="margin-top:10px">다음은 서로 다른 ${tb.name} A~C를 질문에 따라 구분한 것이다.</div><table class="qt"><tr><th>질문</th><th>A</th><th>B</th><th>C</th></tr>${tb.qs.map((qq,r)=>`<tr><td>${qq}</td>${cats.map(c=>`<td>${c.y[r]?'예':'아니요'}</td>`).join('')}</tr>`).join('')}</table>`;
+ const info='📊 표 해석: '+cats.map((c,k)=>`<b>${L[k]}</b> = ${tb.nm(c)}`).join(' / ');
+ const G=[
+  want=>{const k=rnd(3),pool=want?mem(cats[k]):cats.filter((_,j)=>j!==k).flatMap(mem);if(!pool.length)return null;const it=pool[rnd(pool.length)];
+   return{s:`${L[k]}의 사례로 ${jo(lb_(it),'을','를')} 들 수 있다.`,v:want,e:`${L[k]} = ${tb.nm(cats[k])}. <b>${esc(it.n)}</b>은(는) ${AX[tb.ax[0]].get(it)} · ${AX[tb.ax[1]].get(it)}예요.`}},
+  want=>{const k=rnd(3),j=(k+1+rnd(2))%3,r=rnd(2),v=!!(cats[k].y[r]&&!cats[j].y[r]);if(v!==want)return null;
+   return{s:`${L[k]}는 ${L[j]}와 달리 ${tb.ph[r]}.`,v,e:`‘${tb.qs[r]}’에 ${L[k]}는 ‘${cats[k].y[r]?'예':'아니요'}’, ${L[j]}는 ‘${cats[j].y[r]?'예':'아니요'}’예요.`}},
+  want=>{const k=rnd(3),c=want?cats[k]:cats.filter((_,j)=>j!==k)[rnd(2)];return{s:`${L[k]}는 ${tb.nm(c)}이다.`,v:want,e:`${L[k]} = ${tb.nm(cats[k])}.`}}
+ ];
+ const T=randT();
+ askChoice({kind:'표 해석',pre,info,T,ask:'위 표에 대한 옳은 설명만을 &lt;보기&gt;에서 있는 대로 고른 것은?',st:buildSet(T,want=>G[rnd(3)](want))});
+}
+const PASS=[
+ '고등학생 갑은 [[학교|학교]]에서 수업을 마친 뒤 [[학원|학원]]에 들러 수학을 공부한다. 주말에는 [[친구 무리|또래 집단]]와 어울리며 유행어를 배우고, 밤에는 [[TV 뉴스와 인터넷|대중 매체]]을 통해 사회 소식을 접한다.',
+ '을은 [[A 회사|회사(직장)]]에 입사한 뒤, 직원 교육을 위해 따로 세워진 [[연수원|신입 사원 연수원]]에서 직무 교육을 받았다. 이후 동료들과 [[사내 등산 동호회|사내 등산 동호회]]를 만들었고, 퇴근 후에는 환경 보호를 위해 [[시민 단체|시민 단체]]에서 활동한다.',
+ '병은 징병제 국가의 [[군대|군대]]에 입대하여 [[신병 교육대|신병 교육대]]에서 훈련을 받았다. 전역 후 취업하여 [[노동조합|노동조합]]에 가입하였고, 명절에는 [[친척들|친족]]이 모이는 고향을 찾는다.',
+ '정은 [[교도소|교도소]]에서 교화 프로그램을 이수하고 출소한 뒤 [[직업 훈련소|직업 훈련소]]에서 용접 기술을 배웠다. 이후 [[종교 단체|종교 단체]]에 다니며 마음의 안정을 찾았고, [[자원봉사 단체|자원봉사 단체]]에 가입해 봉사 활동을 시작했다.',
+ '무는 [[정당|정당]]에 가입해 선거 운동을 하며 [[민족|민족]]의 동질성을 강조하는 연설을 했다. 의료 정책을 논의하기 위해 [[의사 협회|의사 협회]] 관계자를 만나기도 했다. 은퇴한 무의 어머니는 [[평생 교육원|평생 교육원]]에서 글쓰기 강좌를 듣는다.',
+ '간호사 기는 [[종합 병원|종합 병원]]에서 일하며 동료 간호사들과 [[독서 모임|간호사 독서 모임]]을 꾸리고 있다. 쉬는 날에는 [[가족|가족]]과 시간을 보내고, 회원으로 가입한 [[소비자 단체|소비자 단체]]의 캠페인에 참여한다.',
+ '경은 [[정부 부처|정부 부처]]에서 근무하며 같은 해에 들어온 동료들과 [[입사 동기 모임|입사 동기 모임]]을 갖는다. 주말이면 [[고향 마을 공동체|전통 촌락 공동체]]에 계신 부모님을 찾아가 [[가족|가족]]과 함께 지낸다.'
+];
+const shv=v=>v.replace('공식 조직 · 자발적 결사체 ','공식 조직·결사체 ');
+function genPassQ(){
+ let p,ax;
+ for(let t=0;t<20&&!ax;t++){p=PASS[rnd(PASS.length)];const toks=[];p.replace(/\[\[(.+?)\|(.+?)\]\]/g,(_,a,b)=>toks.push(BYN[b]));
+  const axs=['sf','sl','gc','gw','ot'].filter(a=>{const d=toks.filter(i=>i&&AX[a].get(i));return d.length>=3&&new Set(d.map(i=>AX[a].get(i))).size>=2});
+  if(axs.length)ax=axs[rnd(axs.length)]}
+ const MK='㉠㉡㉢㉣㉤',mk=[];
+ const html=p.replace(/\[\[(.+?)\|(.+?)\]\]/g,(_,a,b)=>{const it=BYN[b];if(it&&AX[ax].get(it)){const l=MK[mk.length];mk.push({txt:a,it,l});return`<span class="mk">${l} ${esc(a)}</span>`}return esc(a)});
+ const ans={},B=$('#pBox');
+ B.innerHTML=pHead('상황 지문')+`<div class="psg">${html}</div><div class="q" style="font-size:18px">밑줄 친 ${mk[0].l}~${mk[mk.length-1].l}을 <b>${AX[ax].lab}</b>에 따라 분류하세요.</div>
+ <div>${mk.map((x,i)=>`<div class="pr"><b style="min-width:120px">${x.l} ${esc(x.txt)}</b><div class="row">${AX[ax].vals.map(v=>`<button class="btn sm" data-i="${i}" data-v="${esc(v)}">${shv(v)}</button>`).join('')}</div></div>`).join('')}</div>
+ <div class="row" style="margin-top:12px"><button class="btn pri" id="pSub">제출하기</button></div><div id="pFb"></div>`;
+ B.querySelectorAll('.pr .btn').forEach(b=>b.onclick=()=>{if(b.disabled)return;ans[b.dataset.i]=b.dataset.v;b.parentElement.querySelectorAll('.btn').forEach(x=>x.classList.toggle('sel',x===b))});
+ $('#pSub').onclick=()=>{
+  if(Object.keys(ans).length<mk.length){toast('모든 밑줄을 분류해 주세요');return}
+  let all=true;
+  const ex=mk.map((x,i)=>{const v=AX[ax].get(x.it),ok=ans[i]===v;stat(ax,ok);if(!ok)all=false;
+   return`<div class="fbi ${ok?'ok':'no'}">${ok?'✅':'❌'} ${x.l} <b>${esc(x.txt)}</b> → 정답 <b>${shv(v)}</b>${ok?'':` <span style="color:var(--no)">(내 답: ${shv(ans[i])})</span>`}<br><span class="muted">→ ${WHY[ax][v]}</span><br>💡 ${x.it.t}</div>`}).join('');
+  ps.n++;if(all)ps.ok++;bump(1);
+  B.querySelectorAll('.pr .btn').forEach(b=>{b.disabled=true;b.style.opacity=1;const i=b.dataset.i,v=AX[ax].get(mk[i].it);b.classList.remove('sel');if(b.dataset.v===v)b.classList.add('okb');else if(ans[i]===b.dataset.v)b.classList.add('nob')});
+  $('#pSub').style.display='none';
+  $('#pFb').innerHTML=`<div class="fbi ${all?'ok':'no'}" style="margin-top:12px"><b>${all?'⭕ 모두 정답!':'❌ 틀린 밑줄이 있어요'}</b></div>${ex}<div class="row" style="margin-top:12px"><button class="btn pri" onclick="newP()">다음 지문 →</button></div>`;
+  if(!all)wrongGen({kind:'상황 지문',q:`${AX[ax].lab} 분류 — ${mk.map(x=>x.txt).join(', ')}`,mine:mk.map((x,i)=>x.l+shv(ans[i])).join(' '),ans:mk.map(x=>x.l+shv(AX[ax].get(x.it))).join(' '),html:`<div class="psg">${html}</div>`+ex});
+ };
+}
+
+/* =====================================================================
+   8. 설정 (화면 · 목표 · 백업 · 나만의 카드)
+   ===================================================================== */
+let O=load(K.o,{theme:'auto',fs:100});
+const mq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
+function applyOpt(){
+ const dark=O.theme==='dark'||(O.theme==='auto'&&mq&&mq.matches);
+ document.documentElement.dataset.theme=dark?'dark':'light';
+ document.querySelector('meta[name=theme-color]').content=dark?'#12151f':'#f5f6fa';
+ $('main').style.zoom=O.fs/100;
+ const mark=(id,v)=>document.querySelectorAll(id+' button').forEach(b=>b.classList.toggle('on',b.dataset.v==String(v)));
+ mark('#thSeg',O.theme);mark('#fsSeg',O.fs);mark('#goalSeg',D.goal);
+}
+if(mq){mq.addEventListener?mq.addEventListener('change',applyOpt):mq.addListener(applyOpt)}
+document.querySelectorAll('#thSeg button').forEach(b=>b.onclick=()=>{O.theme=b.dataset.v;save(K.o,O);applyOpt()});
+document.querySelectorAll('#fsSeg button').forEach(b=>b.onclick=()=>{O.fs=+b.dataset.v;save(K.o,O);applyOpt()});
+document.querySelectorAll('#goalSeg button').forEach(b=>b.onclick=()=>{D.goal=+b.dataset.v;save(K.d,D);applyOpt();renderDay()});
+$('#gear').onclick=()=>{renderCU();$('#set').classList.add('on')};
+$('#setX').onclick=()=>$('#set').classList.remove('on');
+$('#set').onclick=e=>{if(e.target.id==='set')$('#set').classList.remove('on')};
+
+let CU=load(K.c,[]);
+function addCustom(c){const it=Object.assign({custom:true},c);E.push(it);BYN[it.n]=it}
+CU.forEach(c=>{if(!BYN[c.n])addCustom(c)});
+function dump(){return JSON.stringify({app:'sct',v:3,at:Date.now(),W,S,B:load(K.b,{}),D,C:CU})}
+$('#bkCopy').onclick=async()=>{const t=dump();$('#bkTxt').value=t;try{await navigator.clipboard.writeText(t);toast('백업 코드를 복사했어요. 다른 기기에서 붙여넣으세요')}catch(e){$('#bkTxt').select();toast('아래 칸의 코드를 길게 눌러 복사하세요')}};
+$('#bkFile').onclick=()=>{const b=new Blob([dump()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`사문분류-백업-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)};
+function importData(txt){
+ let d;try{d=JSON.parse(txt)}catch(e){toast('코드 형식이 올바르지 않아요');return}
+ if(!d||d.app!=='sct'){toast('이 앱의 백업 코드가 아니에요');return}
+ if(!confirm('이 기기의 기록과 합칠까요?'))return;
+ Object.entries(d.W||{}).forEach(([k,o])=>{const m=W[k];if(!m||(o.last||0)>(m.last||0))W[k]=o});
+ Object.entries(d.S||{}).forEach(([k,s])=>{const m=S[k];if(!m||(s.c+s.w)>(m.c+m.w))S[k]=s});
+ const Bs=load(K.b,{});Object.entries(d.B||{}).forEach(([k,v])=>{if(!Bs[k]||v>Bs[k])Bs[k]=v});save(K.b,Bs);
+ Object.entries((d.D||{}).days||{}).forEach(([k,v])=>{D.days[k]=Math.max(D.days[k]||0,v)});
+ (d.C||[]).forEach(c=>{if(c&&c.n&&!BYN[c.n]){CU.push(c);addCustom(c)}});
+ save(K.w,W);save(K.s,S);save(K.d,D);save(K.c,CU);
+ updDot();updMStat();renderCU();drawLv();if(curTab==='p3')renderP3();toast('기록을 불러왔어요 ✓');
+}
+$('#bkLoad').onclick=()=>{const t=$('#bkTxt').value.trim();if(t)importData(t);else toast('먼저 코드를 붙여넣으세요')};
+$('#bkIn').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(importData);e.target.value=''};
+
+const CF=[['sf','설립 목적'],['sl','사회화 내용'],['gc','접촉 방식'],['gw','결합 의지'],['ot','조직 유형']];
+$('#cuSel').innerHTML=CF.map(([a,l])=>`<div><label>${l}</label><select class="in" id="cu_${a}"><option value="">분류 안 함</option>${AX[a].vals.map(v=>`<option>${v}</option>`).join('')}</select></div>`).join('');
+const axSum=c=>['sf','sl','gc','gw'].map(a=>c[a]).filter(Boolean).concat(c.fo?[otOf(c)]:[]).join(' · ');
+function renderCU(){$('#cuList').innerHTML=CU.length?CU.map((c,i)=>`<div class="wl row sp"><div><b>${esc(c.n)}</b>${c.d?` <span class="muted">(${esc(c.d)})</span>`:''}<br><span class="muted">${esc(axSum(c))}</span></div><button class="btn sm" onclick="delCU(${i})">삭제</button></div>`).join(''):'<p class="muted">아직 추가한 카드가 없어요.</p>'}
+window.delCU=i=>{const c=CU[i];if(!c||!confirm(`'${c.n}' 카드를 삭제할까요?`))return;CU.splice(i,1);save(K.c,CU);const j=E.findIndex(x=>x.custom&&x.n===c.n);if(j>=0)E.splice(j,1);delete BYN[c.n];renderCU()};
+$('#cuAdd').onclick=()=>{
+ const n=$('#cuN').value.trim();if(!n){toast('이름을 입력하세요');return}if(BYN[n]){toast('이미 있는 이름이에요');return}
+ const c={n,t:esc($('#cuT').value.trim()||'직접 추가한 카드예요.')};const d=$('#cuD').value.trim();if(d)c.d=d;
+ let any=false;
+ CF.forEach(([a])=>{const v=$('#cu_'+a).value;if(!v)return;any=true;if(a==='ot'){if(v==='비공식 조직')c.fo='비공식 조직';else{c.fo='공식 조직';c.va=v.endsWith('O')?'O':'X'}}else c[a]=v});
+ if(!any){toast('분류를 하나 이상 고르세요');return}
+ if(c.sf==='공식적'&&c.sl==='1차적'&&!confirm('공식적이면서 1차적인 사회화 기관은 교과서에 없는 조합이에요. 그래도 추가할까요?'))return;
+ if(c.gc==='1차 집단'&&c.gw==='이익 사회'&&!confirm('1차 집단이면서 이익 사회인 조합은 수능에서 거의 다루지 않아요. 그래도 추가할까요?'))return;
+ CU.push(c);save(K.c,CU);addCustom(c);
+ ['cuN','cuD','cuT'].forEach(id=>$('#'+id).value='');CF.forEach(([a])=>$('#cu_'+a).value='');
+ renderCU();toast(`‘${n}’ 카드를 추가했어요`);
+};
+
+/* 기존 기록 호환: 예전 오답(간격 정보 없음)은 오늘 복습으로 */
+Object.values(W).forEach(o=>{if(o.type==='card'&&o.due==null){o.due=0;o.lvl=0}});
+
+/* 시작 */
+applyOpt();newRound(false);updDot();renderDay();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
